@@ -110,7 +110,7 @@ public class GreedySolve {
 		Teacher teacher = teachers.get(teacherIndexes.get(teacherIndex));
 		boolean good = true;
 		Combo combo = new Combo(c,t,r);
-		if(erroneus(solved,combo)) good = false;		
+		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4) good = false;		
 		boolean foundTeacher = false;		
 		if(good){										//We're trying to find a teacher to combo 
 			
@@ -141,7 +141,7 @@ public class GreedySolve {
 		for(Room r : rooms){
 			if(input.get(r) == null) continue;
 			for(Combo c : input.get(r)){
-				
+				r.addFullCourse(c.getCourse(), c.getFirstSlot());
 			}
 		}
 	}

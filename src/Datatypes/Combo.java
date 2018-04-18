@@ -39,6 +39,10 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.c = c;
 	}
 
+	public TimeSlot getFirstSlot(){
+		return this.t.get(0);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -1,5 +1,6 @@
 package Solver;
 
+import java.awt.EventQueue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ import Datatypes.Combo;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
 import Datatypes.TimeSlot;
+import Visualization.VisualTimetable;
+
+
 
 public class Main {
 
@@ -24,7 +28,7 @@ public class Main {
 		System.out.println(g.runCount + " times started the method");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
 		
-		/*EventQueue.invokeLater(new Runnable() {
+		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					VisualTimetable frame = new VisualTimetable(g);
@@ -33,7 +37,7 @@ public class Main {
 					e.printStackTrace();
 				}
 			}
-		});*/
+		});
 	}
 	
 	
@@ -69,6 +73,7 @@ public class Main {
 					combo.print();
 				}
 			}
+			g.setSolution(solved);
 		}
 	}
 	
