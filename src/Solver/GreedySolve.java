@@ -2,8 +2,10 @@ package Solver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import Datatypes.Combo;
 import Datatypes.Course;
@@ -136,6 +138,119 @@ public class GreedySolve {
 		return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
+	public boolean solveHillClimb(HashMap<Room,List<Combo>> solution){		//ToDo teachers availability set
+		boolean isBetter = false;
+		List<Combo> nodes = new ArrayList<Combo>();
+		for(Entry<Room,List<Combo>> entry : solution.entrySet()){
+			nodes.addAll(entry.getValue());
+		}
+		int nodeIndex = 0;
+		Iterator<Combo> it = nodes.iterator();
+		Combo currentNode = nodes.get(nodeIndex);
+		while(nodeIndex < nodes.size()-1){
+			List<Combo> neighbors = this.getNeighbors(solution, currentNode);
+			int startValue = this.getValue(nodes);
+			Combo newNode = null;
+			for(Combo node : neighbors){
+				if(node.getCourse()==null){
+					nodes.set(nodeIndex, node);
+					node.setC(currentNode.getCourse());				
+				} else {
+										//Switch 2 course (later implemented)
+				}
+				int newValue =  this.getValue(nodes);
+				if(newValue < startValue){
+					System.out.println("Found better way " + nodeIndex + " " + newValue);
+					startValue = newValue;
+					currentNode.print();
+					node.print();
+					newNode = node;
+				} 
+			}
+			if(newNode == null){
+				nodes.set(nodeIndex, currentNode);
+			} else {
+				isBetter = true;
+				solution.get(currentNode.getR()).remove(currentNode);
+				solution.get(newNode.getR()).add(newNode);
+			}
+			currentNode = nodes.get(++nodeIndex);
+		}
+		
+		return isBetter;
+	}
+	
+	
+	public int getValue(List<Combo> input){
+		int value = 0;
+		for(Combo combo : input) if(combo.getFirstSlot().getDay()==4) value++;
+		return value;
+	}
+	
+	
+	public int getValue(HashMap<Room,List<Combo>> solution){
+
+		
+		int value = 0;
+		for(List<Combo> combos : solution.values()){
+			for(Combo c : combos){
+				if(c.getFirstSlot().getDay()==4) value+= c.getSize();
+			}
+		}
+		return value;
+	}
+	
+	public List<Combo> getNeighbors(HashMap<Room,List<Combo>> solution, Combo input){
+		List<Combo> output = new ArrayList<Combo>();
+		for(List<Combo> combos : solution.values()){
+			for(Combo c : combos){
+				if(c.getSize() == input.getSize() && !c.getCourse().getT().equals(input.getCourse().getT())) output.add(c);		//get the current courses, which are switchable to the given combo
+			}
+		}
+		for(TimeSlot sl : timeslots){
+			Combo newCombo = null;
+			for(Room r : solution.keySet()){			
+				boolean freeRoom = true;
+				for(Combo combo : solution.get(r)){		
+					if(combo.getSlotList().contains(sl)){
+						freeRoom = false;
+						break;			//If we have course in that room, we go to next room
+					}
+				}
+				if(freeRoom){
+					boolean isLongEnough = true;
+					for(int i = 0; i < input.getSize(); i++){
+						TimeSlot slot = new TimeSlot(sl.getDay(), sl.getSlot()+i);
+						if(sl.getSlot()+i>=4){
+							isLongEnough = false;
+						}
+						for(Combo combo : solution.get(r)){		
+							if(combo.getSlotList().contains(slot)){
+								isLongEnough = false;
+								break;			//If we have course in that room, we go to next room
+							}
+						}
+						if(!isLongEnough) break;
+					}
+					if(isLongEnough){
+						newCombo = new Combo(input.getSize(),sl,r);						
+					}
+				}
+			}
+			if(newCombo != null){
+				for(Entry<Room,List<Combo>> entry : solution.entrySet()){
+					for(Combo c : entry.getValue()){
+						if(c != null && newCombo != null && c.contains(newCombo.getSlotList()) && c.getCourse().getT().getName().equals(input.getCourse().getT().getName())) newCombo = null;
+					}
+				}
+			}
+			if(newCombo != null){
+				output.add(newCombo);
+			}
+		}
+		
+		return output;
+	}
 	
 	public void setSolution(HashMap<Room,List<Combo>> input){
 		for(Room r : rooms){
@@ -145,9 +260,6 @@ public class GreedySolve {
 			}
 		}
 	}
-	
-	
-	
 	
 	private List<Integer> getTeacherByCourse(String topicName){
 		return courseTeacher.get(topicName);

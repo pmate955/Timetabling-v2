@@ -46,33 +46,17 @@ public class Main {
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		System.out.println(g.courses.size());
 		if(g.solveBackTrackHard(g.courses,solved,bad,g.teachers,0,0,0)){
-			/*
-			System.out.println("Success, trying to solve without Friday!");
-			g.copyListR(roomSave, g.rooms);
-			for(Combo c:solved) solvedSave.add(c);
-			solved.clear();
-			bad.clear();
-			g.clearData();			
-			g.NoFridaySlot();
-			System.out.println(g.courses.size());
-			if(g.solveBackTrackHard(g.courses,solved,bad,g.teachers,0,0,0)){
-				System.out.println("Solved without friday :)");				
-			} else {
-				System.out.println("Solved with friday only :(");				
-				g.rooms.clear();
-				g.copyListR(g.rooms, roomSave);
-				solved.clear();
-				for(Combo c:solvedSave) solved.add(c);
-			}
-		}
-		else System.out.println("Failed!!!!");*/
-		
 			for(Map.Entry<Room,List<Combo>>element:solved.entrySet()){
 				System.out.println("Room - --- - " + element.getKey().getName());
 				for(Combo combo : element.getValue()){
 					combo.print();
 				}
 			}
+			for(Room r : g.rooms){
+				if(!solved.containsKey(r)) solved.put(r, new ArrayList<Combo>());
+			}
+			
+			if(g.solveHillClimb(solved)) System.out.println("Found a better soft solution");;
 			g.setSolution(solved);
 		}
 	}

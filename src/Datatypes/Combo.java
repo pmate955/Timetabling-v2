@@ -19,6 +19,15 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		}
 	}
 	
+	public Combo(int size, TimeSlot start, Room r){
+		this.c = null;
+		this.r = r;
+		this.t = new ArrayList<TimeSlot>();
+		for(int i = 0; i < size;i++){
+			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
+		}
+	}
+	
 	public Course getCourse(){
 		return this.c;
 	}
@@ -41,6 +50,10 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 
 	public TimeSlot getFirstSlot(){
 		return this.t.get(0);
+	}
+	
+	public int getSize(){
+		return t.size();
 	}
 	
 	@Override

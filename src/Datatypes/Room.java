@@ -51,11 +51,11 @@ public class Room {
 	
 	public void addFullCourse(Course c, TimeSlot t){
 		try{
-		for(int i = 0; i < c.getSlots(); i++){
-			this.used[t.getDay()][t.getSlot()+i] = c;			
-		}
+			for(int i = 0; i < c.getSlots(); i++){
+				this.used[t.getDay()][t.getSlot()+i] = c;			
+			}
 		} catch (Exception e){
-			System.out.println("Exception at" + this.name);
+			System.out.println("Exception at Room class " + this.name);
 			System.out.println(c.toString() );
 			System.out.println(t.toString());
 		}
