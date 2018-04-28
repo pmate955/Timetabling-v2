@@ -84,18 +84,10 @@ public class GreedySolve {
 		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
 		List<Integer> teacherIndexes = this.getTeacherByCourse(c.getTopicname());
-		if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
-			timeSlotIndex = 0;
-			roomIndex++;
-		}
-		if(roomIndex >= rooms.size()){
-			roomIndex = 0;									//If there is no more room/time, next teacher
-			teacherIndex++;
-		}
-		if(teacherIndex>=teacherIndexes.size()) return false;		//If there are no more teacher, return false
-		IndexCombo p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);			//We're checking the given time/room combo
-		while(used.contains(p)){								//If it's already used, no need recursion, while we don't find an available slot
-			timeSlotIndex++;		
+		IndexCombo p = null;
+		timeSlotIndex--;
+		do{
+			timeSlotIndex++;
 			if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
 				timeSlotIndex = 0;
 				roomIndex++;
@@ -104,9 +96,9 @@ public class GreedySolve {
 				roomIndex = 0;									//If there is no more room/time, next teacher
 				teacherIndex++;
 			}
-			if(teacherIndex>=teacherIndexes.size()) return false;	
-			p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);
-		}
+			if(teacherIndex>=teacherIndexes.size()) return false;		//If there are no more teacher, return false
+			p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);			//We're checking the given time/room combo		
+		} while (used.contains(p));		
 		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
 		Room r = rooms.get(roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(teacherIndex));
@@ -114,8 +106,7 @@ public class GreedySolve {
 		Combo combo = new Combo(c,t,r);
 		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4) good = false;		
 		boolean foundTeacher = false;		
-		if(good){										//We're trying to find a teacher to combo 
-			
+		if(good){										//We're trying to find a teacher to combo 			
 			if(teacher.isAvailable(combo.getSlotList())){
 				foundTeacher = true;				//We have to check the teacher availability 
 			}
