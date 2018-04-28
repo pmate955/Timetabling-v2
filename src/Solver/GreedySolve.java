@@ -104,7 +104,7 @@ public class GreedySolve {
 		Teacher teacher = teachers.get(teacherIndexes.get(teacherIndex));
 		boolean good = true;
 		Combo combo = new Combo(c,t,r);
-		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4) good = false;		
+		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4) return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		
 		boolean foundTeacher = false;		
 		if(good){										//We're trying to find a teacher to combo 			
 			if(teacher.isAvailable(combo.getSlotList())){
@@ -136,7 +136,6 @@ public class GreedySolve {
 			nodes.addAll(entry.getValue());
 		}
 		int nodeIndex = 0;
-		Iterator<Combo> it = nodes.iterator();
 		Combo currentNode = nodes.get(nodeIndex);
 		while(nodeIndex < nodes.size()-1){
 			List<Combo> neighbors = this.getNeighbors(solution, currentNode);
