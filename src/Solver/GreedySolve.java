@@ -102,16 +102,9 @@ public class GreedySolve {
 		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
 		Room r = rooms.get(roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(teacherIndex));
-		boolean good = true;
 		Combo combo = new Combo(c,t,r);
 		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4) return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		
-		boolean foundTeacher = false;		
-		if(good){										//We're trying to find a teacher to combo 			
-			if(teacher.isAvailable(combo.getSlotList())){
-				foundTeacher = true;				//We have to check the teacher availability 
-			}
-		}
-		if(good && foundTeacher){								//If the course has time/room/teacher, we can add to our solved map
+		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
 			combo.getCourse().setT(teachers.get(teacherIndexes.get(teacherIndex)));					//Save the combos
 			if(solved.get(r) == null) {
@@ -121,8 +114,7 @@ public class GreedySolve {
 			} else {
 				solved.get(r).add(combo);
 			}
-			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(timeSlotIndex+i, roomIndex,teacherIndex));
-			
+			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(timeSlotIndex+i, roomIndex,teacherIndex));			
 			cs.remove(c);
 			return solveBackTrackHard(cs,solved,used,teachers,0,0,0);		//We going down the tree with the next course
 		}
