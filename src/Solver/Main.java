@@ -56,7 +56,7 @@ public class Main {
 				if(!solved.containsKey(r)) solved.put(r, new ArrayList<Combo>());
 			}
 			
-			if(g.solveHillClimb(solved)) System.out.println("Found a better soft solution");;
+			if(g.solveHillClimb2(solved)) System.out.println("Found a better soft solution");;
 			g.setSolution(solved);
 		}
 	}

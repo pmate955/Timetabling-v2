@@ -13,7 +13,6 @@ Speciality;Progalap
 Speciality;Dimat1
 Teacher;T4
 Speciality;Elektro
-Speciality;OS
 Teacher;T5
 Speciality;OS
 Speciality;Adatb

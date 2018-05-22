@@ -10,6 +10,7 @@ public class Teacher {
 	private String name;
 	private List<String> specialities;
 	private Set<TimeSlot> availability;
+	private Set<TimeSlot> prohibitedTimes;
 	
 	public Teacher(String name){
 		this.name = name;
