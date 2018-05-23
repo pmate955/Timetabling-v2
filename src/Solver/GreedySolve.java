@@ -24,11 +24,15 @@ public class GreedySolve {
 	public List<Topic> topics;
 	public List<TimeSlot> timeslots;
 	public Map<String,List<Integer>> courseTeacher;
+	public int INPUT_DAYS;
+	public int INPUT_SLOTS;
 	public static int runCount = 0;
 	
 	public GreedySolve(String filename){
 		this.r = new Reader(filename);
 		r.readFile();
+		this.INPUT_DAYS = r.days;
+		this.INPUT_SLOTS = r.slots;
 		this.rooms = new ArrayList<Room>();
 		this.courses = new ArrayList<Course>();
 		this.teachers = new ArrayList<Teacher>();
@@ -46,8 +50,8 @@ public class GreedySolve {
 			courseTeacher.put(to.getName(), tIndexes);
 		}
 		this.timeslots = new ArrayList<TimeSlot>();
-		for(int day = 0; day < 5; day++){
-			for(int slot = 0; slot < 4; slot++){
+		for(int day = 0; day < INPUT_DAYS; day++){
+			for(int slot = 0; slot < INPUT_SLOTS; slot++){
 				TimeSlot t = new TimeSlot(day,slot);
 				this.timeslots.add(t);
 			}
@@ -62,8 +66,8 @@ public class GreedySolve {
 	
 	/*public void NoFridaySlot(){
 		this.timeslots.clear();
-		for(int day = 0; day < 4; day++){
-			for(int slot = 0; slot < 4; slot++){
+		for(int day = 0; day < INPUT_SLOTS; day++){
+			for(int slot = 0; slot < INPUT_SLOTS; slot++){
 				TimeSlot t = new TimeSlot(day,slot);
 				this.timeslots.add(t);
 			}
@@ -103,7 +107,7 @@ public class GreedySolve {
 		Room r = rooms.get(roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(teacherIndex));
 		Combo combo = new Combo(c,t,r);
-		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > 4 || c.getCapacity() > r.getCapacity()) return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		
+		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()) return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		
 		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
 			combo.getCourse().setT(teachers.get(teacherIndexes.get(teacherIndex)));					//Save the combos
@@ -191,7 +195,7 @@ public class GreedySolve {
 				newNode.print();
 			}
 		}
-		System.out.println("New value: " + this.getValue(nodes));
+		
 		return isBetter;
 	}
 	
@@ -201,7 +205,8 @@ public class GreedySolve {
 		for(Combo combo : input) if(combo.getFirstSlot().getDay()==4) value++;			//Friday constraint penalyties
 		
 		for(Teacher te : teachers){														//TEacher compactness
-			for(int day = 0; day < 5; day++){
+			
+			for(int day = 0; day < INPUT_DAYS; day++){
 				int min = 10;
 				int max = -1;
 				List<TimeSlot> in = getSlotsByTeacher(day, te, input);
@@ -210,7 +215,10 @@ public class GreedySolve {
 					if(ts.getSlot() < min) min = ts.getSlot();
 					if(ts.getSlot() > max) max = ts.getSlot();
 				}
-				if(min == max) break;
+				if(min == max){
+					value+= max;
+					break;
+				}
 				for(int slot = 0; slot < max; slot++){
 					if(!in.contains(new TimeSlot(day,slot))){
 						value++;
@@ -235,7 +243,7 @@ public class GreedySolve {
 		int value = 0;
 		for(List<Combo> combos : solution.values()){
 			for(Combo c : combos){
-				if(c.getFirstSlot().getDay()==4) value+= c.getSize();
+				if(c.getFirstSlot().getDay()==INPUT_SLOTS) value+= c.getSize();
 			}
 		}
 		return value;
@@ -262,7 +270,7 @@ public class GreedySolve {
 					boolean isLongEnough = true;
 					for(int i = 0; i < input.getSize(); i++){
 						TimeSlot slot = new TimeSlot(sl.getDay(), sl.getSlot()+i);
-						if(sl.getSlot()+i>=4){
+						if(sl.getSlot()+i>=INPUT_SLOTS){
 							isLongEnough = false;
 						}
 						for(Combo combo : solution.get(r)){		
@@ -307,7 +315,7 @@ public class GreedySolve {
 	}
 	
 	private boolean erroneus(HashMap<Room,List<Combo>> good, Combo c){					//True, if the solution is not correct
-		//if(c.getT().getSlot()>=4) return true;								//Not enough timeslot for the given day
+		//if(c.getT().getSlot()>=INPUT_SLOTS) return true;								//Not enough timeslot for the given day
 		if(!good.containsKey(c.getR())) return false;
 		for(Combo com: good.get(c.getR())){
 			//if(gd.getR().equals(c.getR()) && gd.getT().equals(c.getT()))	return true;		//If it collides with another course, which is already in list

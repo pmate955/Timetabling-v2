@@ -13,14 +13,16 @@ public class Reader {
 	public List<Teacher> teachers;
 	public List<Course> courses;
 	public List<Topic> topics;
+	public int days = 0;
+	public int slots = 0;
 	private String filename;
 	
 	public Reader(String filename){
 		this.filename = filename;
-		this.rooms = new ArrayList();
-		this.teachers = new ArrayList();
-		this.courses = new ArrayList();
-		this.topics = new ArrayList();
+		this.rooms = new ArrayList<Room>();
+		this.teachers = new ArrayList<Teacher>();
+		this.courses = new ArrayList<Course>();
+		this.topics = new ArrayList<Topic>();
 	}
 	
 	public boolean readFile(){
@@ -29,7 +31,9 @@ public class Reader {
 			String s = br.readLine();
 			while(s!=null){
 				String[] token = s.split(";");
-				if(token[0].equals("Room")) this.addRoom(token);
+				if(token[0].equals("Days")) this.days = Integer.parseInt(token[1]);
+				else if(token[0].equals("Slots")) this.slots = Integer.parseInt(token[1]);
+				else if(token[0].equals("Room")) this.addRoom(token);
 				else if(token[0].equals("Teacher")) this.addTeacher(token);
 				else if(token[0].equals("Topic")) this.addTopic(token);
 				else if(token[0].equals("Course")) this.addCourse(token);
@@ -47,7 +51,7 @@ public class Reader {
 	private void addRoom(String[] str){
 		String name = str[1];
 		int capacity = Integer.parseInt(str[2]);
-		Room r = new Room(name, 5, 4, capacity);
+		Room r = new Room(name, days, slots, capacity);
 		rooms.add(r);
 	}
 	
