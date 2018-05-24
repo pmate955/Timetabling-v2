@@ -124,7 +124,7 @@ public class GreedySolve {
 		}
 		return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
-	
+	boolean checking = false;
 	public boolean solveHillClimb2(HashMap<Room,List<Combo>> solution){		//ToDo teachers availability set
 		boolean isBetter = false;
 		List<Combo> nodes = new ArrayList<Combo>();
@@ -134,75 +134,99 @@ public class GreedySolve {
 		for(int i = 0; i < 100; i++){
 			int nodeIndex = 0;
 			int firstNodeIndex =  -1;					//Elsõ cserélhetõ combo indexe(legjobb)
-			Combo newNode = null;						//Második cserélhetõ combo(legjobb)
+			Combo newNode = null;					//Második cserélhetõ combo(legjobb)
 			Combo currentNode = nodes.get(nodeIndex);		//Ehhez nézem a jobb szomszédot
 			int switchMode = 0;								//Ha 0 - áthelyezés, üres slot. Ha 1 - kurzuscsere.
-			while(nodeIndex < nodes.size()-1){				//Ciklus a vizsgált csúcshoz
+			int globalMinimum = this.getValue(nodes);		//Lekérem a kezdeti minimumot
+			while(nodeIndex < nodes.size()){				//Ciklus a vizsgált csúcshoz
+				currentNode = nodes.get(nodeIndex);
 				List<Combo> neighbors = this.getNeighbors(solution, currentNode);
 				int startValue = this.getValue(nodes);
-				
 				for(Combo node : neighbors){				//Megvizsgálom az adott currenthez minden szomszédját, és a legjobbat megkeresem
+					currentNode = nodes.get(nodeIndex);
+					
 					int mode = 0;
 					if(node.getCourse()==null){
 						mode = 0;
 						nodes.set(nodeIndex, node);
 						node.setC(currentNode.getCourse());				
 					} else {
-						mode = 1;					//Switch 2 course (later implemented)
-						Course temp = currentNode.getCourse();			//Lekérem az elsõ kombó kurzusát
-						currentNode.setC(node.getCourse());				//Ez lesz a másiké
-						int neighborIndex = nodes.lastIndexOf(node);
-						node.setC(temp);								//Visszateszem az elsõbe a másodikét
-						nodes.set(neighborIndex, node);					//
+						mode = 1;										//Switch 2 course (later implemented)
+						int neighborIndex = this.getIndex(nodes, node);
+						currentNode.swap(node);								//Visszateszem az elsõbe a másodikét
+						nodes.set(nodeIndex, currentNode);
+						nodes.set(neighborIndex, node);		
 					}
 					int newValue =  this.getValue(nodes);
-					if(newValue < startValue){
+					if(mode ==1){
+						currentNode.swap(node);								//Visszateszem az elsõbe a másodikét
+						int neighborIndex = this.getIndex(nodes, node);
+						nodes.set(nodeIndex, currentNode);
+						nodes.set(neighborIndex, node);	
+					}
+					nodes.set(nodeIndex, currentNode);	
+					if(newValue < startValue && newValue < globalMinimum){
 						firstNodeIndex = nodeIndex;
+						globalMinimum = newValue;
 						startValue = newValue;
 						newNode = node;
 						switchMode = mode;
 						
 					} 
-					Course temp = currentNode.getCourse();			//Lekérem az elsõ kombó kurzusát
-					currentNode.setC(node.getCourse());				//Ez lesz a másiké
-					int last = nodes.lastIndexOf(node);
-					node.setC(temp);				
-					nodes.set(last, node);
+					
 				}
-				nodes.set(nodeIndex, currentNode);						//Visszaállitás		
-				currentNode = nodes.get(++nodeIndex);
+				nodeIndex++;				
+				
 			}
 			if(newNode != null && switchMode == 0){						//Új üres helyre rakom a kurzust
-				System.out.println(i + ". iteration, better solution: ");
+				System.out.print(i + ". iteration, better solution: " + this.getValue(nodes));
 				isBetter = true;
 				currentNode = nodes.get(firstNodeIndex);				//kiveszem a cserélendõ elsõ kurzust
 				newNode.setC(currentNode.getCourse());					//Beteszem a másik combo kurzusának, ami ugye üres volt
 				nodes.set(firstNodeIndex, newNode);						//Beteszem a régi helyére az újat
 				solution.get(currentNode.getR()).remove(currentNode);	//Törlöm az eredmény régi termébõl
 				solution.get(newNode.getR()).add(newNode);				//és betszem az új terembe
+
+				System.out.println(" to " + this.getValue(nodes));
+				
 				currentNode.print();
 				newNode.print();
 			} else if(newNode != null && switchMode == 1){				//Cserélek két kurzust
+				int strt = this.getValue(nodes);
 				System.out.println(i + ". iteration, better swap solution: ");
 				isBetter = true;
 				currentNode = nodes.get(firstNodeIndex);
-				Course temp = currentNode.getCourse();
-				currentNode.setC(newNode.getCourse());				//Ez lesz a másiké
-				int neighborIndex = nodes.lastIndexOf(newNode);
-				newNode.setC(temp);								
-				nodes.set(neighborIndex, newNode);	
+				solution.get(currentNode.getR()).remove(currentNode);	//Törlöm a termekbõl a node-okat
+				solution.get(newNode.getR()).remove(newNode);
 				currentNode.print();
-				newNode.print();
+				newNode.print();			
+				int neighborIndex = this.getIndex(nodes, newNode);								
+				currentNode.swap(newNode);
+				nodes.set(neighborIndex, currentNode);	
+				nodes.set(firstNodeIndex, newNode);
+				solution.get(newNode.getR()).add(newNode);
+				solution.get(currentNode.getR()).add(currentNode);
+				nodes.get(firstNodeIndex).print();
+				nodes.get(neighborIndex).print();
+
+				System.out.println(strt + " to " + this.getValue(nodes) + " " + globalMinimum);
 			}
 		}
 		
 		return isBetter;
 	}
 	
+	private int getIndex(List<Combo> nodes, Combo input){
+		for(int i = 0; i < nodes.size(); i++){
+			Combo c = nodes.get(i);
+			if(c.getCourse().getName().equals(input.getCourse().getName())) return i;
+		}
+		return -1;
+	}
 	
 	public int getValue(List<Combo> input){
 		int value = 0;
-		for(Combo combo : input) if(combo.getFirstSlot().getDay()==4) value++;			//Friday constraint penalyties
+		for(Combo combo : input) if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
 		
 		for(Teacher te : teachers){														//TEacher compactness
 			
@@ -210,14 +234,17 @@ public class GreedySolve {
 				int min = 10;
 				int max = -1;
 				List<TimeSlot> in = getSlotsByTeacher(day, te, input);
+				if(checking){
+				//	System.out.println(day + " - " + te.getName() + " - " + in.size());
+				}
 				if(in == null) break;
 				for(TimeSlot ts : in){
 					if(ts.getSlot() < min) min = ts.getSlot();
 					if(ts.getSlot() > max) max = ts.getSlot();
 				}
 				if(min == max){
-					value+= max;
-					break;
+					value += max;
+					continue;
 				}
 				for(int slot = 0; slot < max; slot++){
 					if(!in.contains(new TimeSlot(day,slot))){
@@ -226,6 +253,7 @@ public class GreedySolve {
 				}
 			}
 		}
+		//if(checking) System.out.println(" " + value);
 		return value;
 	}
 	
@@ -258,7 +286,7 @@ public class GreedySolve {
 		}
 		for(TimeSlot sl : timeslots){
 			Combo newCombo = null;
-			for(Room r : solution.keySet()){			
+			for(Room r : solution.keySet()){	
 				boolean freeRoom = true;
 				for(Combo combo : solution.get(r)){		
 					if(combo.getSlotList().contains(sl)){
@@ -282,6 +310,8 @@ public class GreedySolve {
 						if(!isLongEnough) break;
 					}
 					if(isLongEnough){
+
+						if(checking && input.getCourse().getName().equals("ASM_6") && r.getName().equals("219")) System.out.println(sl.toString());
 						newCombo = new Combo(input.getSize(),sl,r);						
 					}
 				}
@@ -312,6 +342,12 @@ public class GreedySolve {
 	
 	private List<Integer> getTeacherByCourse(String topicName){
 		return courseTeacher.get(topicName);
+	}
+	
+	private void swapCourse(Combo first, Combo second){
+		Course f = first.getCourse();
+		first.setC(second.getCourse());
+		second.setC(f);
 	}
 	
 	private boolean erroneus(HashMap<Room,List<Combo>> good, Combo c){					//True, if the solution is not correct

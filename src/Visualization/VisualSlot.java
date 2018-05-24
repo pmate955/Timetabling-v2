@@ -28,7 +28,7 @@ public class VisualSlot extends JPanel {
 			lbl = new JLabel(c.getName());
 			tLbl = new JLabel(c.getT() == null?"No teacher":c.getT().getName());
 			if(c.getT()==null) tLbl.setForeground(Color.RED);
-			else tLbl.setForeground(Color.GREEN);
+			else tLbl.setForeground(Color.BLUE);
 		}
 		
 		lbl.setHorizontalAlignment(JLabel.CENTER);

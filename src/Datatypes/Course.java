@@ -15,6 +15,15 @@ public class Course {
 		this.isFixed = false;
 		this.topicname = topicname;
 	}
+	
+	public Course(Course input){
+		this.name = input.name;
+		this.capacity = input.capacity;
+		this.slots = input.slots;
+		this.isFixed = input.isFixed();
+		this.topicname = input.topicname;
+		this.T = input.getT();
+	}
 
 	public String getTopicname() {
 		return topicname;

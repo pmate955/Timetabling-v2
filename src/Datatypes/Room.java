@@ -17,6 +17,22 @@ public class Room {
 		this.slots = times;
 	}
 	
+	public Room(Room input){
+		this.name = input.getName();
+		this.days = input.days;
+		this.slots = input.slots;
+		this.used = new Course[days][slots];
+		for(int day = 0; day < days; day++){
+			for(int sl = 0; sl < slots; sl++){
+				if(input.used[day][sl]!= null) {
+					used[day][sl] = new Course(input.used[day][sl]);
+				}
+				
+			}
+		}
+		this.capacity = input.capacity;
+	}
+	
 	public String getName(){return this.name;}
 	public int getCapacity(){return this.capacity;}
 	public int getDays(){return this.days;}

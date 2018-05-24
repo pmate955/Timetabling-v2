@@ -10,14 +10,19 @@ public class Teacher {
 	private String name;
 	private List<String> specialities;
 	private Set<TimeSlot> availability;
-	private Set<TimeSlot> prohibitedTimes;
 	
 	public Teacher(String name){
 		this.name = name;
 		this.specialities = new ArrayList<String>();
 		this.availability = new HashSet<TimeSlot>();
 	}
+	
+	public Teacher(Teacher input){
+		this.name = input.name;
+	}
 
+	
+	
 	public String getName() {
 		return name;
 	}

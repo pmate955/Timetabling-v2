@@ -32,8 +32,21 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return this.c;
 	}
 
+	public void swap(Combo input){
+		Course c = input.getCourse();
+		input.setC(new Course(this.c));
+		this.c = new Course(c);
+	}
+	
+	
+	
 	public List<TimeSlot> getSlotList() {
 		return t;
+	}
+	
+	public void setList(List<TimeSlot> t){
+		this.t.clear();
+		this.t.addAll(t);
 	}
 
 	public boolean contains(List<TimeSlot> input){
