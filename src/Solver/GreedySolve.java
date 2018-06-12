@@ -117,12 +117,14 @@ public class GreedySolve {
 	boolean checking = false;
 	
 	public boolean solveHillClimb2(HashMap<Room,List<Combo>> solution){		//ToDo teachers availability set
-		boolean isBetter = false;
+		boolean isBetter = true;
 		List<Combo> nodes = new ArrayList<Combo>();
 		for(Entry<Room,List<Combo>> entry : solution.entrySet()){
 			nodes.addAll(entry.getValue());
 		}
-		for(int i = 0; i < 100; i++){
+		int i = 0;
+		while(isBetter){
+			i++;
 			int nodeIndex = 0;
 			int firstNodeIndex =  -1;					//Elsõ cserélhetõ combo indexe(legjobb)
 			Combo newNode = null;					//Második cserélhetõ combo(legjobb)
@@ -182,6 +184,7 @@ public class GreedySolve {
 				
 				currentNode.print();
 				newNode.print();
+				isBetter = true;
 			} else if(newNode != null && switchMode == 1){				//Cserélek két kurzust
 				int strt = this.getValue(nodes);
 				System.out.println(i + ". iteration, better swap solution: ");
@@ -199,9 +202,9 @@ public class GreedySolve {
 				solution.get(currentNode.getR()).add(currentNode);
 				nodes.get(firstNodeIndex).print();
 				nodes.get(neighborIndex).print();
-
+				isBetter = true;
 				System.out.println(strt + " to " + this.getValue(nodes) + " " + globalMinimum);
-			}
+			} else isBetter = false;
 		}
 		
 		return isBetter;
@@ -217,13 +220,21 @@ public class GreedySolve {
 	
 	public int getValue(List<Combo> input){
 		int value = 0;
+		int[] coursesByRoom = new int[rooms.size()];
 		for(Combo combo : input){
 			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
+			coursesByRoom[rooms.indexOf(combo.getR())]+= combo.getSize();
 			//if(combo.getFirstSlot().getDay()==4) value-=4;
-			if(combo.getFirstSlot().getSlot() == 0) value-=10;
-			if(combo.getFirstSlot().getSlot()+combo.getSize()-1 >= 1 && combo.getFirstSlot().getSlot() <= 1) value+=40;
+			//if(combo.getFirstSlot().getSlot() == 0) value-=1;
+			//if(combo.getFirstSlot().getSlot()+combo.getSize()-1 >= 1 && combo.getFirstSlot().getSlot() <= 1) value+=40;
 		}
-		
+		int max1 = coursesByRoom[0];
+		int min1 = coursesByRoom[0];
+		for(int i = 1; i < coursesByRoom.length; i++) {
+			if(coursesByRoom[i] < min1) min1 = coursesByRoom[i];
+			if(coursesByRoom[i] > max1) max1 = coursesByRoom[i];
+		}
+		value += (max1-min1);
 		for(Teacher te : teachers){														//TEacher compactness
 			
 			for(int day = 0; day < INPUT_DAYS; day++){
