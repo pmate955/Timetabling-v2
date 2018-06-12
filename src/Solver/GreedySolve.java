@@ -64,16 +64,6 @@ public class GreedySolve {
 		this.copyListC(this.courses, r.courses);
 	}
 	
-	/*public void NoFridaySlot(){
-		this.timeslots.clear();
-		for(int day = 0; day < INPUT_SLOTS; day++){
-			for(int slot = 0; slot < INPUT_SLOTS; slot++){
-				TimeSlot t = new TimeSlot(day,slot);
-				this.timeslots.add(t);
-			}
-		}
-	}*/
-	
 	
 	public void printSolution(){
 		System.out.println("Solution: ");
@@ -125,6 +115,7 @@ public class GreedySolve {
 		return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	boolean checking = false;
+	
 	public boolean solveHillClimb2(HashMap<Room,List<Combo>> solution){		//ToDo teachers availability set
 		boolean isBetter = false;
 		List<Combo> nodes = new ArrayList<Combo>();
@@ -146,26 +137,26 @@ public class GreedySolve {
 					currentNode = nodes.get(nodeIndex);
 					
 					int mode = 0;
-					if(node.getCourse()==null){
-						mode = 0;
+					if(node.getCourse()==null){							//Put the actual course to an empty slot
 						nodes.set(nodeIndex, node);
 						node.setC(currentNode.getCourse());				
 					} else {
-						mode = 1;										//Switch 2 course (later implemented)
+						mode = 1;										//Switch 2 course 
 						int neighborIndex = this.getIndex(nodes, node);
-						currentNode.swap(node);								//Visszateszem az elsõbe a másodikét
+						currentNode.swap(node);								
 						nodes.set(nodeIndex, currentNode);
 						nodes.set(neighborIndex, node);		
 					}
 					int newValue =  this.getValue(nodes);
-					if(mode ==1){
-						currentNode.swap(node);								//Visszateszem az elsõbe a másodikét
+					if(erroneus(nodes)) newValue = Integer.MAX_VALUE;
+					if(mode ==1){											//Reset to the original state
+						currentNode.swap(node);								
 						int neighborIndex = this.getIndex(nodes, node);
 						nodes.set(nodeIndex, currentNode);
 						nodes.set(neighborIndex, node);	
 					}
 					nodes.set(nodeIndex, currentNode);	
-					if(newValue < startValue && newValue < globalMinimum){
+					if(newValue < startValue && newValue < globalMinimum){	//If the new solution was better, I save it
 						firstNodeIndex = nodeIndex;
 						globalMinimum = newValue;
 						startValue = newValue;
@@ -226,17 +217,19 @@ public class GreedySolve {
 	
 	public int getValue(List<Combo> input){
 		int value = 0;
-		for(Combo combo : input) if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
+		for(Combo combo : input){
+			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
+			//if(combo.getFirstSlot().getDay()==4) value-=4;
+			if(combo.getFirstSlot().getSlot() == 0) value-=10;
+			if(combo.getFirstSlot().getSlot()+combo.getSize()-1 >= 1 && combo.getFirstSlot().getSlot() <= 1) value+=40;
+		}
 		
 		for(Teacher te : teachers){														//TEacher compactness
 			
 			for(int day = 0; day < INPUT_DAYS; day++){
 				int min = 10;
 				int max = -1;
-				List<TimeSlot> in = getSlotsByTeacher(day, te, input);
-				if(checking){
-				//	System.out.println(day + " - " + te.getName() + " - " + in.size());
-				}
+				List<TimeSlot> in = getSlotsByTeacher(day, te, input);				
 				if(in == null) break;
 				for(TimeSlot ts : in){
 					if(ts.getSlot() < min) min = ts.getSlot();
@@ -253,7 +246,6 @@ public class GreedySolve {
 				}
 			}
 		}
-		//if(checking) System.out.println(" " + value);
 		return value;
 	}
 	
@@ -279,12 +271,30 @@ public class GreedySolve {
 	
 	public List<Combo> getNeighbors(HashMap<Room,List<Combo>> solution, Combo input){
 		List<Combo> output = new ArrayList<Combo>();
-		for(List<Combo> combos : solution.values()){
+		boolean debugmode = false;
+		if(input.getCourse().getName().equals("Dimat1_4")) debugmode = true;
+		for(List<Combo> combos : solution.values()){		//Neighbor courses
 			for(Combo c : combos){
-				if(c.getSize() == input.getSize() && !c.getCourse().getT().equals(input.getCourse().getT())) output.add(c);		//get the current courses, which are switchable to the given combo
+				if(c.getSize() == input.getSize() && !c.getCourse().getT().equals(input.getCourse().getT())){
+				/*	boolean hasCourse = false;
+					for(List<Combo> combos2 : solution.values()){
+						for(Combo c2 : combos2){
+							if(c2.getSize() == c.getSize() && c2.getFirstSlot().equals(input.getFirstSlot()) && c2.getCourse().getT().getName().equals(c.getCourse().getT().getName())){
+								hasCourse = true;
+								break;
+							}		
+						}
+						if(hasCourse) break;
+					}
+					if(!hasCourse){
+						//System.out.println("C : " + c.getCourse().getName() + " " + c.getFirstSlot().toString());
+					*/	
+					output.add(c);		//get the current courses, which are switchable to the given combo
+					
+				}
 			}
 		}
-		for(TimeSlot sl : timeslots){
+		for(TimeSlot sl : timeslots){						//Free slot selector
 			Combo newCombo = null;
 			for(Room r : solution.keySet()){	
 				boolean freeRoom = true;
@@ -344,12 +354,6 @@ public class GreedySolve {
 		return courseTeacher.get(topicName);
 	}
 	
-	private void swapCourse(Combo first, Combo second){
-		Course f = first.getCourse();
-		first.setC(second.getCourse());
-		second.setC(f);
-	}
-	
 	private boolean erroneus(HashMap<Room,List<Combo>> good, Combo c){					//True, if the solution is not correct
 		//if(c.getT().getSlot()>=INPUT_SLOTS) return true;								//Not enough timeslot for the given day
 		if(!good.containsKey(c.getR())) return false;
@@ -358,6 +362,19 @@ public class GreedySolve {
 			if(com.contains(c.getSlotList())) return true;
 		}
 		return false;														//Otherwise, it's good :)
+	}
+
+	private boolean erroneus(List<Combo> nodes){
+		for(Combo c1 : nodes){
+			for(Combo c2 : nodes){
+				if(!c2.equals(c1)){				
+					if(c1.contains(c2.getSlotList())&& c1.getCourse().getT().getName().equals(c2.getCourse().getT().getName())){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void copyListC(List<Course> dest, List<Course> src){

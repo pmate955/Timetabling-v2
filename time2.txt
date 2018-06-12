@@ -1,5 +1,5 @@
 Days;5
-Slots;5
+Slots;6
 Room;216;25
 Room;217;25
 Room;218;25
