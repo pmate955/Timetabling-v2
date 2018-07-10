@@ -1,7 +1,7 @@
 package Datatypes;
 
 public class IndexCombo {
-	private int slotIndex,roomIndex,teacherIndex;
+	public int slotIndex,roomIndex,teacherIndex;
 
 	public IndexCombo(int slotIndex, int roomIndex, int teacherIndex) {
 		this.slotIndex = slotIndex;

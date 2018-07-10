@@ -2,6 +2,7 @@ package Visualization;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -10,12 +11,9 @@ import javax.swing.border.LineBorder;
 import Datatypes.Course;
 
 public class VisualSlot extends JPanel {
-
-	private String name;
-	private int slot;
-	private int length;
 	
 	public VisualSlot(Course c) {
+		
 		setLayout(new BorderLayout());
 		setBorder(new LineBorder(Color.BLACK));
 		JLabel lbl = null;
@@ -23,7 +21,7 @@ public class VisualSlot extends JPanel {
 		if(c == null){
 			lbl = new JLabel("empty");
 			tLbl = new JLabel("No teacher");
-		}
+		} 
 		else{
 			lbl = new JLabel(c.getName());
 			tLbl = new JLabel(c.getT() == null?"No teacher":c.getT().getName());

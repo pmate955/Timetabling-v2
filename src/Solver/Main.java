@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import Datatypes.Combo;
+import Datatypes.Course;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
 import Datatypes.TimeSlot;
+import NewVisualization.TimeTableFrame;
 import Visualization.VisualTimetable;
 
 
@@ -21,7 +23,9 @@ public class Main {
 	public static void main(String[] args) {
 		GreedySolve g = new GreedySolve("time2.txt");		
 		Instant start = Instant.now();
-		solveNew(g);
+		TimeTableFrame tf = new TimeTableFrame();
+		
+	//	solveNew(g);
 		Instant end = Instant.now();				
 		System.out.println();
 		System.out.println("==========Optimization info============");
@@ -31,8 +35,8 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VisualTimetable frame = new VisualTimetable(g);
-					frame.setVisible(true);
+		//			VisualTimetable frame = new VisualTimetable(g);
+		//			frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -45,7 +49,7 @@ public class Main {
 		HashMap<Room, List<Combo>> solved = new HashMap<Room,List<Combo>>();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		System.out.println(g.courses.size());
-		if(g.solveBackTrackHard(g.courses,solved,bad,g.teachers,0,0,0)){
+		if(g.solveBackTrackHard(g.courses,solved,bad,g.teachers,new IndexCombo(0,0,0))){
 			for(Map.Entry<Room,List<Combo>>element:solved.entrySet()){
 				System.out.println("Room - --- - " + element.getKey().getName());
 				for(Combo combo : element.getValue()){
@@ -56,8 +60,17 @@ public class Main {
 				if(!solved.containsKey(r)) solved.put(r, new ArrayList<Combo>());
 			}
 			
-			if(g.solveHillClimb2(solved)) System.out.println("Found a better soft solution");;
+			//if(g.solveHillClimb2(solved)) System.out.println("Found a better soft solution");;
 			g.setSolution(solved);
+		}
+	}
+	
+	public static void solveTest(GreedySolve g){
+		List<IndexCombo> bad = new ArrayList<IndexCombo>();
+		System.out.println("Start to test");
+		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
+			g.printSolution();
+			System.out.println("Success");
 		}
 	}
 	

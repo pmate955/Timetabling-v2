@@ -47,6 +47,12 @@ public class Room {
 		this.used[t.getDay()][t.getSlot()] = c;		
 	}
 	
+	public void addCombo(Combo c){
+		for(int i =0 ; i < c.getSize();i++){
+			used[c.getFirstSlot().getDay()][c.getFirstSlot().getSlot()+i] = c.getCourse();
+		}
+	}
+	
 	public Course getCourse(TimeSlot t){
 		if(t.getSlot()<0) return null;
 		Course now = used[t.getDay()][t.getSlot()];
@@ -94,28 +100,10 @@ public class Room {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	public boolean equals(Object obj) {		
 		Room other = (Room) obj;
-		if (capacity != other.capacity)
-			return false;
-		if (days != other.days)
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (slots != other.slots)
-			return false;
-		if (!Arrays.deepEquals(used, other.used))
-			return false;
-		return true;
+		if(other.name.equals(this.name)) return true;
+		return false;
 	}
 
 	public void print(){

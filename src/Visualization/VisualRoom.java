@@ -45,10 +45,14 @@ public class VisualRoom extends JPanel{
 	{
 		VisualSlot vs = new VisualSlot(c);
 		GridBagConstraints gc = new GridBagConstraints();
-		gc.weightx = gc.weighty = 1;
+		gc.weightx = 1;
+		gc.weighty = 1;
 		gc.gridx = x;
 		gc.gridy = y;
-		if(c != null) gc.gridheight = c.getSlots();
+		if(c != null){
+			gc.gridheight = c.getSlots();
+			//gc.weighty = c.getSlots();
+		}
 		gc.anchor = GridBagConstraints.CENTER;
 		gc.fill = GridBagConstraints.BOTH;
 		add(vs, gc);		
