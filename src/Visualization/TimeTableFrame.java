@@ -63,9 +63,7 @@ public class TimeTableFrame extends JFrame {
 			GreedySolve g = new GreedySolve(selectedFile.getAbsolutePath());		
 			Instant start = Instant.now();
 			List<IndexCombo> bad = new ArrayList<IndexCombo>();
-			System.out.println("Start to test");
 			if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
-			//	g.printSolution();
 				showSolution(g);
 				System.out.println("Success");
 			}
@@ -90,7 +88,6 @@ public class TimeTableFrame extends JFrame {
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
 		for(Room r : g.rooms){
 			r.print();
-			System.out.println(r.getSlots());
 			VisualRoom vr = new VisualRoom(r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			contentPane.add(vr);

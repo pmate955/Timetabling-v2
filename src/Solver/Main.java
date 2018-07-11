@@ -57,7 +57,7 @@ public class Main {
 			}
 			
 			//if(g.solveHillClimb2(solved)) System.out.println("Found a better soft solution");;
-			g.setSolution(solved);
+			//g.setSolution(solved);
 		}
 	}
 	

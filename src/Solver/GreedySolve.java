@@ -394,7 +394,7 @@ public class GreedySolve {
 		for(Room r : rooms){
 			if(input.get(r) == null) continue;
 			for(Combo c : input.get(r)){
-				r.addFullCourse(c.getCourse(), c.getFirstSlot());
+			//	r.addFullCourse(c.getCourse(), c.getFirstSlot());
 			}
 		}
 	}
