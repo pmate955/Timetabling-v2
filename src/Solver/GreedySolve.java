@@ -157,7 +157,7 @@ public class GreedySolve {
 	}
 	
 	public boolean solveHillClimb2(HashMap<Room,List<Combo>> solution){		//ToDo teachers availability set
-		boolean isBetter = true;
+		boolean isBetter = true;	
 		List<Combo> nodes = new ArrayList<Combo>();
 		for(Entry<Room,List<Combo>> entry : solution.entrySet()){
 			nodes.addAll(entry.getValue());

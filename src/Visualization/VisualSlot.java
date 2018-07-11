@@ -36,5 +36,31 @@ public class VisualSlot extends JPanel {
 		tLbl.setVerticalAlignment(JLabel.CENTER);
 		add(tLbl, BorderLayout.SOUTH);
 	}
+	
+	public VisualSlot(String s, Color c) {		
+		setLayout(new BorderLayout());
+		setBorder(new LineBorder(Color.BLACK));
+		setBackground(c);
+		JLabel lbl = new JLabel(s);		
+		lbl.setHorizontalAlignment(JLabel.CENTER);
+		lbl.setVerticalAlignment(JLabel.CENTER);		
+		add(lbl, BorderLayout.CENTER);
+	}
+	
+	public VisualSlot(String s1, String s2, Color c) {		
+		setLayout(new BorderLayout());
+		setBorder(new LineBorder(Color.BLACK));
+		setBackground(c);
+		JLabel lbl = new JLabel(s1);
+		JLabel tLbl = new JLabel(s2);		
+		lbl.setHorizontalAlignment(JLabel.CENTER);
+		lbl.setVerticalAlignment(JLabel.CENTER);		
+		add(lbl, BorderLayout.CENTER);
+		tLbl.setHorizontalAlignment(JLabel.CENTER);
+		tLbl.setVerticalAlignment(JLabel.CENTER);
+		add(tLbl, BorderLayout.SOUTH);
+	}
+	
+	
 
 }

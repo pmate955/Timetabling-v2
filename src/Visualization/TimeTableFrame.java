@@ -1,4 +1,4 @@
-package NewVisualization;
+package Visualization;
 
 import java.io.File;
 import java.time.Duration;
@@ -91,19 +91,9 @@ public class TimeTableFrame extends JFrame {
 		for(Room r : g.rooms){
 			r.print();
 			System.out.println(r.getSlots());
-			JPanel panel = new JPanel();
-			panel.setBorder(BorderFactory.createTitledBorder(r.getName()));
-			Object[][] data = new Object[g.INPUT_SLOTS][g.INPUT_DAYS];
-			for(int slot = 0; slot < g.INPUT_SLOTS;slot++){
-				for(int day = 0; day < g.INPUT_DAYS; day++){
-					Course c = r.getCourseByPos(day, slot);
-					if(c == null) data[slot][day]="Empty slot";
-					else data[slot][day]=c.getName();
-				}
-			}
-			JTable table = new JTable(data, columns);
-			panel.add(table);
-			contentPane.add(panel);
+			VisualRoom vr = new VisualRoom(r);
+			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
+			contentPane.add(vr);
 		}
 		this.getContentPane().add(scrollPane);
 		this.revalidate();

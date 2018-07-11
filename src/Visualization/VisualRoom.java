@@ -1,5 +1,6 @@
 package Visualization;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
@@ -12,7 +13,21 @@ public class VisualRoom extends JPanel{
 
 	public VisualRoom(Room r)
 	{
+		GridBagLayout gl = new GridBagLayout();
+		double[] weights = new double[r.getSlots()];
+		for(int i = 0; i < r.getSlots(); i++){
+			weights[i] = 2;
+		}
+		gl.rowWeights = weights;
 		setLayout(new GridBagLayout());
+		addDummySlot(0,0,"Day/slot",null);
+		for(int i = 0; i < r.getSlots(); i++){
+			addDummySlot(0,i+1, "Slot", "" + i);
+		}
+		for(int i = 0; i < r.getDays(); i++){
+			addDummySlot(i+1, 0, "Day " + i, null);
+		}
+		
 		
 		for (int i = 0; i < r.getDays(); i++) {
 			//TODO: check if slots are 0
@@ -47,15 +62,30 @@ public class VisualRoom extends JPanel{
 		GridBagConstraints gc = new GridBagConstraints();
 		gc.weightx = 1;
 		gc.weighty = 1;
-		gc.gridx = x;
-		gc.gridy = y;
+		gc.gridx = x+1;
+		gc.gridy = y+1;
 		if(c != null){
 			gc.gridheight = c.getSlots();
-			//gc.weighty = c.getSlots();
 		}
 		gc.anchor = GridBagConstraints.CENTER;
 		gc.fill = GridBagConstraints.BOTH;
 		add(vs, gc);		
 	}
 	
+	private void addDummySlot(int x, int y, String s1, String s2){
+		GridBagConstraints gc = new GridBagConstraints();
+		gc.weightx = 1;
+		gc.weighty = 1;
+		gc.gridx = x;
+		gc.gridy = y;
+		VisualSlot vs;
+		if(s2!=null ){
+			vs = new VisualSlot(s1,s2, Color.CYAN);	
+		} else {
+			vs = new VisualSlot(s1, Color.CYAN);	
+		}
+		gc.anchor = GridBagConstraints.CENTER;
+		gc.fill = GridBagConstraints.BOTH;
+		add(vs, gc);		
+	}
 }

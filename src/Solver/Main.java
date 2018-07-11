@@ -1,6 +1,5 @@
 package Solver;
 
-import java.awt.EventQueue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,12 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import Datatypes.Combo;
-import Datatypes.Course;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
-import Datatypes.TimeSlot;
-import NewVisualization.TimeTableFrame;
-import Visualization.VisualTimetable;
+import Visualization.TimeTableFrame;
 
 
 
@@ -25,7 +21,7 @@ public class Main {
 		Instant start = Instant.now();
 		TimeTableFrame tf = new TimeTableFrame();
 		
-	//	solveNew(g);
+	/*	solveNew(g);
 		Instant end = Instant.now();				
 		System.out.println();
 		System.out.println("==========Optimization info============");
@@ -35,13 +31,13 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-		//			VisualTimetable frame = new VisualTimetable(g);
-		//			frame.setVisible(true);
+					VisualTimetable frame = new VisualTimetable(g);
+					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-		});
+		});*/
 	}
 	
 	
