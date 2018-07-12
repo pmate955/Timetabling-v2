@@ -38,7 +38,13 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.c = new Course(c);
 	}
 	
-	
+	public boolean hasConflict(Combo input){
+		boolean out = false;
+		if(this.r.getName().equals(input.getR().getName())){
+			if(this.contains(input.getSlotList())) return true;
+		}
+		return out;
+	}
 	
 	public List<TimeSlot> getSlotList() {
 		return t;

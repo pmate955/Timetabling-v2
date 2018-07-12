@@ -43,12 +43,23 @@ public class Room {
 		courses.add(c);
 	}
 
+	public void deleteCombo(Combo c){
+		courses.remove(c);
+	}
+	
 
 	public void clearRoom(){
 		courses.clear();
 	}
 	
 	
+	
+	
+	public List<Combo> getCourses() {
+		return courses;
+	}
+
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

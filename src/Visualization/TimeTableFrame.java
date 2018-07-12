@@ -1,5 +1,6 @@
 package Visualization;
 
+import java.awt.GridLayout;
 import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,16 +16,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 
-import Datatypes.Course;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
 import Solver.GreedySolve;
 
-public class TimeTableFrame extends JFrame {
+public class TimeTableFrame extends JFrame implements Runnable{
 	
 	private JPanel contentPane;
 	private File selectedFile;
@@ -36,7 +35,7 @@ public class TimeTableFrame extends JFrame {
 		contentPane = new JPanel();
 		setJMenuBar(addMenu());
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-		//setContentPane(contentPane);
+		setContentPane(contentPane);
 		setVisible(true);
 	}
 
@@ -60,18 +59,8 @@ public class TimeTableFrame extends JFrame {
 		JMenu solverMenu = new JMenu("Solver");
 		JMenuItem startSolver = new JMenuItem("Start");
 		startSolver.addActionListener((l)->{
-			GreedySolve g = new GreedySolve(selectedFile.getAbsolutePath());		
-			Instant start = Instant.now();
-			List<IndexCombo> bad = new ArrayList<IndexCombo>();
-			if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
-				showSolution(g);
-				System.out.println("Success");
-			}
-			Instant end = Instant.now();				
-			System.out.println();
-			System.out.println("==========Optimization info============");
-			System.out.println(g.runCount + " times started the method");
-			System.out.println("Time needed: " + Duration.between(start, end)); 
+			Thread t = new Thread(this);
+			t.start();
 		});
 		solverMenu.add(startSolver);
 		
@@ -82,19 +71,41 @@ public class TimeTableFrame extends JFrame {
 	}
 	
 	private void showSolution(GreedySolve g){
+		JPanel p = new JPanel();
+		p.setLayout(new GridLayout(0,1));
 		contentPane.removeAll();
-		JScrollPane scrollPane = new JScrollPane(contentPane);
+		JScrollPane scrollPane = new JScrollPane();
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
 		for(Room r : g.rooms){
 			r.print();
 			VisualRoom vr = new VisualRoom(r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
-			contentPane.add(vr);
+			p.add(vr);
 		}
+		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
 		this.revalidate();
 		this.repaint();
+	}
+
+	@Override
+	public void run() {
+		GreedySolve g = new GreedySolve(selectedFile.getAbsolutePath());		
+		Instant start = Instant.now();
+		List<IndexCombo> bad = new ArrayList<IndexCombo>();
+		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
+			
+			System.out.println("Success");
+			g.solveHillClimb(g.rooms);
+			showSolution(g);
+		}
+		Instant end = Instant.now();				
+		System.out.println();
+		System.out.println("==========Optimization info============");
+		System.out.println(g.runCount + " times started the method");
+		System.out.println("Time needed: " + Duration.between(start, end)); 
+		
 	}
 	
 	
