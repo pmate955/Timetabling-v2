@@ -141,7 +141,7 @@ public class GreedySolve {
 						nodes.set(neighborIndex, node);	
 					}
 					int newValue =  this.getValue(nodes);
-				/*	if(erroneus(nodes)){
+					/*if(erroneus(nodes)){
 						System.out.println("ERRORRRRR " + localSwapMode);
 						newValue = Integer.MAX_VALUE;
 					}*/
@@ -163,11 +163,12 @@ public class GreedySolve {
 				actualNodeIndex++;
 			}
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
-				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
+				System.out.println(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);					//Get the first node
-				//secondNode.setC(currentNode.getCourse());					//We set secondNode course empty to new one				
-				
-				secondNode.setCourse(currentNode);
+			//secondNode.setC(currentNode.getCourse());					//We set secondNode course empty to new one				
+				currentNode.print();
+				secondNode.print();
+				secondNode.setCourse(currentNode);				
 				nodes.set(firstNodeIndex, secondNode);
 				solution.get(solution.indexOf(currentNode.getR())).deleteCombo(currentNode);
 				solution.get(solution.indexOf(secondNode.getR())).addCombo(secondNode);
@@ -212,7 +213,7 @@ public class GreedySolve {
 		int value = 0;
 		int[] coursesByRoom = new int[rooms.size()];
 		for(Combo combo : input){
-			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
+			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalties
 			coursesByRoom[rooms.indexOf(combo.getR())]+= combo.getSize();
 			//if(combo.getFirstSlot().getDay()==4) value-=4;
 			//if(combo.getFirstSlot().getSlot() == 0) value-=1;

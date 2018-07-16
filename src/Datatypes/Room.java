@@ -18,7 +18,15 @@ public class Room {
 		this.slots = times;
 	}
 	
-	
+	public Room(Room r){
+		this.name = r.name;
+		this.courses = new ArrayList<Combo>();
+		this.courses.addAll(r.courses);
+		this.capacity = r.capacity;
+		this.days = r.days;
+		this.slots = r.slots;
+	}
+
 	public String getName(){return this.name;}
 	public int getCapacity(){return this.capacity;}
 	public int getDays(){return this.days;}
@@ -78,9 +86,8 @@ public class Room {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
 		Room other = (Room) obj;
+		if(name.equals(other.name)) return true;
 		if (capacity != other.capacity)
 			return false;
 		if (courses == null) {
@@ -100,6 +107,20 @@ public class Room {
 		return true;
 	}
 
+	public String toString(){
+		String out = "Room: " + name + "\r\n";
+		out += ("=============================================================\r\n");
+		for(int slot = 0; slot < slots; slot++ ){
+			for(int day = 0; day < days; day++){
+				if(this.getCourseByPos(day, slot)==null) out += ("day: " + day + " slot: " + slot + " is empty || ");
+				else out+= ("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString() + " || ");
+			}
+			out += "\r\n";
+		}
+		out += ("=============================================================\r\n");
+		return out;
+	}
+	
 	public void print(){
 		System.out.println("Room: " + name);
 		System.out.println("=============================================================");

@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -22,11 +23,13 @@ import javax.swing.filechooser.FileSystemView;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
 import Solver.GreedySolve;
+import Solver.Writer;
 
 public class TimeTableFrame extends JFrame implements Runnable{
 	
 	private JPanel contentPane;
 	private File selectedFile;
+	private GreedySolve g;
 	
 	public TimeTableFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,7 +58,23 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				
 			}
 		});
+		JMenuItem save = new JMenuItem("Save txt");
+		save.addActionListener((l)->{
+			if(g!=null){
+				if(Writer.writeFile("out.txt", g.rooms)){
+					JOptionPane.showMessageDialog(this, "Saving succesful");
+				} else {
+					JOptionPane.showMessageDialog(this, "Error while saving");
+				};
+			}
+		});
+		JMenuItem exit = new JMenuItem("Exit");
+		exit.addActionListener((l)->{
+			System.exit(0);
+		});
 		fileMenu.add(open);
+		fileMenu.add(save);
+		fileMenu.add(exit);
 		JMenu solverMenu = new JMenu("Solver");
 		JMenuItem startSolver = new JMenuItem("Start");
 		startSolver.addActionListener((l)->{
@@ -91,7 +110,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 
 	@Override
 	public void run() {
-		GreedySolve g = new GreedySolve(selectedFile.getAbsolutePath());		
+		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
