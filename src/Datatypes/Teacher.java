@@ -46,6 +46,7 @@ public class Teacher {
 	public void print(){
 		System.out.println("Name: " + this.name);
 		for(String s: specialities) System.out.println("Spec: " + s);
+		for(TimeSlot t : availability) System.out.println("Unav: " + t.toString());
 		System.out.println("---------------------------------");
 	}
 	
@@ -54,6 +55,14 @@ public class Teacher {
 			TimeSlot ts = new TimeSlot(t.getDay(),t.getSlot()+i);
 			if(!availability.contains(ts)) availability.add(ts);
 		}
+	}
+	
+	public void addUnavailablePeriod(List<TimeSlot> in){
+		this.availability.addAll(in);
+	}
+	
+	public void deleteUnavailablePeriod(List<TimeSlot> in){
+		this.availability.removeAll(in);
 	}
 	
 	public boolean isAvailable(List<TimeSlot> input){

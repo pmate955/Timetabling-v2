@@ -1,11 +1,10 @@
 package Solver;
 
+import java.lang.invoke.SwitchPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import Datatypes.Combo;
 import Datatypes.Course;
@@ -108,6 +107,8 @@ public class GreedySolve {
 		return solveBackTrackHard2(cs,solved,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
+
+	
 	public void solveHillClimb(List<Room> solution){
 		List<Combo> nodes = new ArrayList<Combo>();			//Get the list of all node
 		for(Room r : solution){
@@ -140,7 +141,10 @@ public class GreedySolve {
 						nodes.set(neighborIndex, node);	
 					}
 					int newValue =  this.getValue(nodes);
-					if(erroneus(nodes)) newValue = Integer.MAX_VALUE;
+				/*	if(erroneus(nodes)){
+						System.out.println("ERRORRRRR " + localSwapMode);
+						newValue = Integer.MAX_VALUE;
+					}*/
 					if(localSwapMode==1){				//only for switch
 						currentNode.swap(node);								
 						int neighborIndex = this.getIndex(nodes, node);
@@ -161,13 +165,16 @@ public class GreedySolve {
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
 				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);					//Get the first node
-				secondNode.setC(currentNode.getCourse());					//We set secondNode course empty to new one
+				//secondNode.setC(currentNode.getCourse());					//We set secondNode course empty to new one				
+				
+				secondNode.setCourse(currentNode);
 				nodes.set(firstNodeIndex, secondNode);
 				solution.get(solution.indexOf(currentNode.getR())).deleteCombo(currentNode);
 				solution.get(solution.indexOf(secondNode.getR())).addCombo(secondNode);
 				System.out.println(" to " + this.getValue(nodes));
 				currentNode.print();
 				secondNode.print();
+			//	secondNode.getCourse().getT().print();
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
 				System.out.print(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
@@ -190,6 +197,7 @@ public class GreedySolve {
 				foundBetter = false;
 			}
 		}
+		
 	}
 	
 	private int getIndex(List<Combo> nodes, Combo input){
@@ -250,107 +258,35 @@ public class GreedySolve {
 		return output;
 	}
 	
-	public int getValue(HashMap<Room,List<Combo>> solution){
-
-		
-		int value = 0;
-		for(List<Combo> combos : solution.values()){
-			for(Combo c : combos){
-				if(c.getFirstSlot().getDay()==INPUT_SLOTS) value+= c.getSize();
-			}
-		}
-		return value;
-	}
-	
 	
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){
 		List<Combo> output = new ArrayList<Combo>();
-		for(Combo c : solution){ 	//get the current courses, which are swappable to the given combo
-			if(c.getSize() == input.getSize() && !c.getCourse().getT().equals(input.getCourse().getT())){
+		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
+			if(c.getSize() == input.getSize() && c.getCourse().getT().equals(input.getCourse().getT())){
 				output.add(c);		
 			}
 		}
-		for(TimeSlot actual : timeslots){
+		for(TimeSlot actual : timeslots){			//Get the empty slots
 			Combo newCombo = null;
 			for(Room r : rooms){
 				boolean isBad = false;
 				newCombo = new Combo(input.getSize(), actual, r);
-				for(Combo c : solution){
+				for(Combo c : r.getCourses()){
 					if(newCombo.hasConflict(c)){
 						isBad = true;
 						break;
 					}
 				}
-				if(!isBad) output.add(newCombo);
+				if(!isBad && input.getCourse().getT().isAvailable(newCombo.getSlotList())){
+					output.add(newCombo);
+				}
 			}
 			
 		}
 		
 		return output;
 	}
-	
-	public List<Combo> getNeighbors(HashMap<Room,List<Combo>> solution, Combo input){
-		List<Combo> output = new ArrayList<Combo>();
-		for(List<Combo> combos : solution.values()){		//Neighbor courses
-			for(Combo c : combos){
-				if(c.getSize() == input.getSize() && !c.getCourse().getT().equals(input.getCourse().getT())){
-					output.add(c);		//get the current courses, which are switchable to the given combo
-				}
-			}
-		}
-		for(TimeSlot sl : timeslots){						//Free slot selector
-			Combo newCombo = null;
-			for(Room r : solution.keySet()){	
-				boolean freeRoom = true;
-				for(Combo combo : solution.get(r)){		
-					if(combo.getSlotList().contains(sl)){
-						freeRoom = false;
-						break;			//If we have course in that room, we go to next room
-					}
-				}
-				if(freeRoom){
-					boolean isLongEnough = true;
-					for(int i = 0; i < input.getSize(); i++){
-						TimeSlot slot = new TimeSlot(sl.getDay(), sl.getSlot()+i);
-						if(sl.getSlot()+i>=INPUT_SLOTS){
-							isLongEnough = false;
-						}
-						for(Combo combo : solution.get(r)){		
-							if(combo.getSlotList().contains(slot)){
-								isLongEnough = false;
-								break;			//If we have course in that room, we go to next room
-							}
-						}
-						if(!isLongEnough) break;
-					}
-					if(isLongEnough){
-						newCombo = new Combo(input.getSize(),sl,r);						
-					}
-				}
-			}
-			if(newCombo != null){
-				for(Entry<Room,List<Combo>> entry : solution.entrySet()){
-					for(Combo c : entry.getValue()){
-						if(c != null && newCombo != null && c.contains(newCombo.getSlotList()) && c.getCourse().getT().getName().equals(input.getCourse().getT().getName())) newCombo = null;
-					}
-				}
-			}
-			if(newCombo != null){
-				output.add(newCombo);
-			}
-		}
-		
-		return output;
-	}
-	
-	public void setSolution(HashMap<Room,List<Combo>> input){
-		for(Room r : rooms){
-			if(input.get(r) == null) continue;
-			for(Combo c : input.get(r)){
-			//	r.addFullCourse(c.getCourse(), c.getFirstSlot());
-			}
-		}
-	}
+
 	
 	private List<Integer> getTeacherByCourse(String topicName){
 		return courseTeacher.get(topicName);

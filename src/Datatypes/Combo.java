@@ -34,8 +34,13 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 
 	public void swap(Combo input){
 		Course c = input.getCourse();
+		
 		input.setC(new Course(this.c));
+//		input.c.getT().deleteUnavailablePeriod(input.t);
+//		input.c.getT().addUnavailablePeriod(this.t);
 		this.c = new Course(c);
+	//	this.c.getT().deleteUnavailablePeriod(input.t);
+		//this.c.getT().addUnavailablePeriod(this.t);
 	}
 	
 	public boolean hasConflict(Combo input){
@@ -65,6 +70,12 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 	
 	public void setC(Course c) {
 		this.c = c;
+	}
+	
+	public void setCourse(Combo c){
+		c.c.getT().deleteUnavailablePeriod(c.getSlotList());		//Delete unavailable periods from last course
+		this.c = c.c;										//Add course to current
+		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
 	}
 
 	public TimeSlot getFirstSlot(){
