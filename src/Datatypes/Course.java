@@ -1,5 +1,7 @@
 package Datatypes;
 
+import java.util.List;
+
 public class Course {
 	private String name;
 	private Teacher T;
@@ -7,13 +9,15 @@ public class Course {
 	private int slots;
 	private boolean isFixed;
 	private String topicname;
+	private int teacherIndex;
 	
-	public Course(String name, String topicname,  int slots, int capacity){
+	public Course(String name, String topicname,  int slots, int capacity, int teacherIndex){
 		this.name = name;
 		this.capacity = capacity;
 		this.slots = slots;
 		this.isFixed = false;
 		this.topicname = topicname;
+		this.teacherIndex = teacherIndex;
 	}
 	
 	public Course(Course input){
@@ -23,6 +27,7 @@ public class Course {
 		this.isFixed = input.isFixed();
 		this.topicname = input.topicname;
 		this.T = input.getT();
+		this.teacherIndex = input.teacherIndex;
 	}
 
 	public String getTopicname() {
@@ -57,8 +62,8 @@ public class Course {
 		this.capacity = capacity;
 	}
 
-	public String toString(){
-		return "Name: " + this.name + " Teacher: " + (T==null?" null ":T.getName()) + " Students: " + this.capacity + " slots: " + this.slots;
+	public String toString(List<Teacher> te){
+		return "Name: " + this.name + " Teacher: " + (teacherIndex==-1?" null ":te.get(teacherIndex).getName()) + " Students: " + this.capacity + " slots: " + this.slots;
 	}
 	
 	public boolean isFixed(){
@@ -70,6 +75,22 @@ public class Course {
 		//System.out.println("setfixed");
 	}
 	
+	
+	
+	/**
+	 * @return the teacherIndex
+	 */
+	public int getTeacherIndex() {
+		return teacherIndex;
+	}
+
+	/**
+	 * @param teacherIndex the teacherIndex to set
+	 */
+	public void setTeacherIndex(int teacherIndex) {
+		this.teacherIndex = teacherIndex;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

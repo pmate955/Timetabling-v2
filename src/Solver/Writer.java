@@ -7,14 +7,15 @@ import java.io.IOException;
 import java.util.List;
 
 import Datatypes.Room;
+import Datatypes.Teacher;
 
 public class Writer {
 	
-	public static boolean writeFile(String path, List<Room> solution){
+	public static boolean writeFile(String path, List<Room> solution, List<Teacher> te){
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
 			for(Room r : solution){
-				bw.write(r.toString());
+				bw.write(r.toString(te));
 			}
 			bw.close();
 		} catch (IOException e) {

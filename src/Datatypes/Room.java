@@ -107,13 +107,13 @@ public class Room {
 		return true;
 	}
 
-	public String toString(){
+	public String toString(List<Teacher> te){
 		String out = "Room: " + name + "\r\n";
 		out += ("=============================================================\r\n");
 		for(int slot = 0; slot < slots; slot++ ){
 			for(int day = 0; day < days; day++){
 				if(this.getCourseByPos(day, slot)==null) out += ("day: " + day + " slot: " + slot + " is empty || ");
-				else out+= ("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString() + " || ");
+				else out+= ("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString(te) + " || ");
 			}
 			out += "\r\n";
 		}
@@ -121,13 +121,13 @@ public class Room {
 		return out;
 	}
 	
-	public void print(){
+	public void print(List<Teacher> te){
 		System.out.println("Room: " + name);
 		System.out.println("=============================================================");
 		for(int slot = 0; slot < slots; slot++ ){
 			for(int day = 0; day < days; day++){
 				if(this.getCourseByPos(day, slot)==null) System.out.print("day: " + day + " slot: " + slot + " is empty || ");
-				else System.out.print("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString() + " || ");
+				else System.out.print("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString(te) + " || ");
 			}
 			System.out.println();
 		}

@@ -6,9 +6,9 @@ import java.util.List;
 
 public class Combo {		//Represents a combination of TimeSlot, Course and Room {later teacher}
 	
-	private Course c;
-	private List<TimeSlot> t;
-	private Room r;
+	public Course c;
+	public List<TimeSlot> t;
+	public Room r;
 	
 	public Combo(Course c, TimeSlot start, Room r){
 		this.c = c;
@@ -79,14 +79,9 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		c.c.getT().deleteUnavailablePeriod(c.getSlotList());		//Delete unavailable periods from last course
 		this.c = new Course(c.c);										//Add course to current
 		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
-		//this.c.getT().print();
 	}
 
-	public void setCourse2(Combo c){
-		this.c = new Course(c.c);										//Add course to current
-		this.c.getT().deleteUnavailablePeriod(c.t);
-		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
-	}
+	
 	public TimeSlot getFirstSlot(){
 		return this.t.get(0);
 	}
@@ -136,8 +131,8 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.r = r;
 	}
 
-	public void print(){
-		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size());
+	public void print(List<Teacher> te){
+		System.out.println(t.toString() + " | " + (c==null?"_":c.toString(te)) + " " + r.getName() + " " + t.size());
 	}
 	
 	public void setFixed(){

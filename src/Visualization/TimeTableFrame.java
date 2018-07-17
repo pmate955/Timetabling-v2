@@ -61,7 +61,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		JMenuItem save = new JMenuItem("Save txt");
 		save.addActionListener((l)->{
 			if(g!=null){
-				if(Writer.writeFile("out.txt", g.rooms)){
+				if(Writer.writeFile("out.txt", g.rooms, g.teachers)){
 					JOptionPane.showMessageDialog(this, "Saving succesful");
 				} else {
 					JOptionPane.showMessageDialog(this, "Error while saving");
@@ -97,8 +97,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
 		for(Room r : g.rooms){
-			r.print();
-			VisualRoom vr = new VisualRoom(r);
+			r.print(g.teachers);
+			VisualRoom vr = new VisualRoom(r,g.teachers);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			p.add(vr);
 		}
@@ -114,7 +114,6 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
-			
 			System.out.println("Success");
 			g.solveHillClimb(g.rooms);
 			showSolution(g);

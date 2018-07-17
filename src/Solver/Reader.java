@@ -71,7 +71,7 @@ public class Reader {
 		String name = str[1];
 		int capacity = Integer.parseInt(str[3]);
 		int slots = Integer.parseInt(str[2]);
-		Course c = new Course(name,topics.get(topics.size()-1).getName(), slots, capacity);
+		Course c = new Course(name,topics.get(topics.size()-1).getName(), slots, capacity,-1);
 		courses.add(c);
 		topics.get(topics.size()-1).addCourse(c);
 	}

@@ -23,8 +23,8 @@ public class VisualTimetable extends JFrame {
 		contentPane.setLayout(new BorderLayout());
 		JTabbedPane tPane = new JTabbedPane();
 		for (int i = 0; i < gr.rooms.size(); i++) {
-	        JComponent roomPanel = new VisualRoom(gr.rooms.get(i));
-	        tPane.addTab(gr.rooms.get(i).getName(), roomPanel);
+	//        JComponent roomPanel = new VisualRoom(gr.rooms.get(i));
+	//        tPane.addTab(gr.rooms.get(i).getName(), roomPanel);
 		}
 		
 		contentPane.add(tPane, BorderLayout.CENTER);

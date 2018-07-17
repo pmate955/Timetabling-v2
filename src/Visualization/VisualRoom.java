@@ -3,15 +3,17 @@ package Visualization;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.List;
 
 import javax.swing.JPanel;
 
 import Datatypes.Course;
 import Datatypes.Room;
+import Datatypes.Teacher;
 
 public class VisualRoom extends JPanel{
 
-	public VisualRoom(Room r)
+	public VisualRoom(Room r, List<Teacher> t)
 	{
 		GridBagLayout gl = new GridBagLayout();
 		double[] weights = new double[r.getSlots()];
@@ -36,29 +38,29 @@ public class VisualRoom extends JPanel{
 			for (int j = 0; j < r.getSlots(); j++) {
 				if(r.getCourseByPos(i, j) == null)
 				{
-					if(current != null) addCourse(current, i, startSlot);
+					if(current != null) addCourse(current, i, startSlot,t);
 					current = r.getCourseByPos(i, j);
-					addCourse(current, i, j);
+					addCourse(current, i, j,t);
 					startSlot = j;
 				}
 				else if(current != null && r.getCourseByPos(i, j).getName().equals(current.getName())) continue;
 				else
 				{
 					//create visualslot for current
-					if(current != null) addCourse(current, i, startSlot);
+					if(current != null) addCourse(current, i, startSlot,t);
 					//init new current
 					current = r.getCourseByPos(i, j);
 					startSlot = j;
 				}
 			}
 			//add final course
-			if(current != null) addCourse(current, i, startSlot);
+			if(current != null) addCourse(current, i, startSlot,t);
 		}
 	}
 	
-	private void addCourse(Course c, int x, int y)
+	private void addCourse(Course c, int x, int y, List<Teacher> t)
 	{
-		VisualSlot vs = new VisualSlot(c);
+		VisualSlot vs = new VisualSlot(c,t);
 		GridBagConstraints gc = new GridBagConstraints();
 		gc.weightx = 1;
 		gc.weighty = 1;
