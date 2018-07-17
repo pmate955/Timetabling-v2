@@ -1,5 +1,6 @@
 package Datatypes;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ public class Teacher {
 	}
 	
 	public void print(){
-		System.out.println("Name: " + this.name);
+		System.out.println("Name: " + this.name + " av " + availability.size());
 		for(String s: specialities) System.out.println("Spec: " + s);
 		for(TimeSlot t : availability) System.out.println("Unav: " + t.toString());
 		System.out.println("---------------------------------");
@@ -77,6 +78,22 @@ public class Teacher {
 		for(TimeSlot t: availability) System.out.println(t.toString());
 	}
 	
+	/**
+	 * @return the availability
+	 */
+	public Set<TimeSlot> getAvailability() {
+		return availability;
+	}
+	
+	public List<TimeSlot> getAvailabilityAtDay(int day){
+		List<TimeSlot> out = new ArrayList<TimeSlot>();
+		for(TimeSlot t : availability){
+			if(t.getDay() == day) out.add(t);
+		}
+		return out;
+	}
+	
+
 	public void clearAvailability(){
 		this.availability.clear();
 	}

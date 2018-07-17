@@ -1,6 +1,7 @@
 package Solver;
 
 import java.lang.invoke.SwitchPoint;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -132,7 +133,7 @@ public class GreedySolve {
 					int localSwapMode = 0;
 					if(node.getCourse()==null){								//Place the combo to the new place
 						nodes.set(actualNodeIndex, node);
-						node.setC(currentNode.getCourse());
+						node.setCourse(currentNode);
 					} else {
 						localSwapMode = 1;
 						int neighborIndex = this.getIndex(nodes, node);
@@ -150,6 +151,8 @@ public class GreedySolve {
 						int neighborIndex = this.getIndex(nodes, node);
 						nodes.set(actualNodeIndex, currentNode);
 						nodes.set(neighborIndex, node);	
+					} else if(localSwapMode == 0){
+						currentNode.setCourse(node);
 					}
 					nodes.set(actualNodeIndex, currentNode);
 					if(newValue < startValue && newValue < globalMinimum){			//If we found better global value
@@ -166,8 +169,6 @@ public class GreedySolve {
 				System.out.println(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);					//Get the first node
 			//secondNode.setC(currentNode.getCourse());					//We set secondNode course empty to new one				
-				currentNode.print();
-				secondNode.print();
 				secondNode.setCourse(currentNode);				
 				nodes.set(firstNodeIndex, secondNode);
 				solution.get(solution.indexOf(currentNode.getR())).deleteCombo(currentNode);
@@ -175,7 +176,6 @@ public class GreedySolve {
 				System.out.println(" to " + this.getValue(nodes));
 				currentNode.print();
 				secondNode.print();
-			//	secondNode.getCourse().getT().print();
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
 				System.out.print(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
@@ -198,7 +198,6 @@ public class GreedySolve {
 				foundBetter = false;
 			}
 		}
-		
 	}
 	
 	private int getIndex(List<Combo> nodes, Combo input){
@@ -213,7 +212,7 @@ public class GreedySolve {
 		int value = 0;
 		int[] coursesByRoom = new int[rooms.size()];
 		for(Combo combo : input){
-			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalties
+			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
 			coursesByRoom[rooms.indexOf(combo.getR())]+= combo.getSize();
 			//if(combo.getFirstSlot().getDay()==4) value-=4;
 			//if(combo.getFirstSlot().getSlot() == 0) value-=1;
@@ -227,11 +226,11 @@ public class GreedySolve {
 		}
 		value += (max1-min1);
 		for(Teacher te : teachers){														//TEacher compactness
-			
 			for(int day = 0; day < INPUT_DAYS; day++){
+				
 				int min = 10;
 				int max = -1;
-				List<TimeSlot> in = getSlotsByTeacher(day, te, input);				
+				List<TimeSlot> in = getSlotTeacher(day, te, input);				
 				if(in == null) break;
 				for(TimeSlot ts : in){
 					if(ts.getSlot() < min) min = ts.getSlot();
@@ -251,14 +250,14 @@ public class GreedySolve {
 		return value;
 	}
 	
-	private List<TimeSlot> getSlotsByTeacher(int day, Teacher t, List<Combo> input){
-		List<TimeSlot> output = new ArrayList<TimeSlot>();
+	private List<TimeSlot> getSlotTeacher(int day, Teacher t, List<Combo> input){		
 		for(Combo c : input){
-			if(day == c.getFirstSlot().getDay() && c.getCourse().getT().getName().equals(t.getName())) output.addAll(c.getSlotList());
+			if(c.getCourse().getT().getName().equals(t.getName())){
+				return c.getCourse().getT().getAvailabilityAtDay(day);
+			}
 		}
-		return output;
+		return null;
 	}
-	
 	
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){
 		List<Combo> output = new ArrayList<Combo>();
@@ -268,6 +267,7 @@ public class GreedySolve {
 			}
 		}
 		for(TimeSlot actual : timeslots){			//Get the empty slots
+			if(actual.getSlot()+input.getSize()>=INPUT_SLOTS) continue;
 			Combo newCombo = null;
 			for(Room r : rooms){
 				boolean isBad = false;

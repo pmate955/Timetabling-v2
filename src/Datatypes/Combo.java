@@ -77,10 +77,16 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 	
 	public void setCourse(Combo c){
 		c.c.getT().deleteUnavailablePeriod(c.getSlotList());		//Delete unavailable periods from last course
-		this.c = c.c;										//Add course to current
+		this.c = new Course(c.c);										//Add course to current
 		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
+		//this.c.getT().print();
 	}
 
+	public void setCourse2(Combo c){
+		this.c = new Course(c.c);										//Add course to current
+		this.c.getT().deleteUnavailablePeriod(c.t);
+		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
+	}
 	public TimeSlot getFirstSlot(){
 		return this.t.get(0);
 	}
