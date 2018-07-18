@@ -9,7 +9,7 @@ public class Curriculum {
 	
 	public Curriculum(String name){
 		this.name = name;
-		this.courses = new ArrayList();
+		this.courses = new ArrayList<Course>();
 	}
 	
 	public void addCourse(Course c){

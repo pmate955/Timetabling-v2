@@ -9,7 +9,7 @@ public class Topic {
 	
 	public Topic(String name){
 		this.name = name;
-		l = new ArrayList();
+		l = new ArrayList<Course>();
 	}
 	
 	public String getName(){

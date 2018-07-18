@@ -3,13 +3,11 @@ package Visualization;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.List;
 
 import javax.swing.JPanel;
 
 import Datatypes.Course;
 import Datatypes.Room;
-import Datatypes.Teacher;
 
 public class VisualRoom extends JPanel{
 

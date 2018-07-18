@@ -2,14 +2,12 @@ package Visualization;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import Datatypes.Course;
-import Datatypes.Teacher;
 
 public class VisualSlot extends JPanel {
 	
@@ -25,7 +23,7 @@ public class VisualSlot extends JPanel {
 		} 
 		else{
 			lbl = new JLabel(c.getName());
-			tLbl = new JLabel(c.getTeacherIndex() == -1?"No teacher":c.getTeacherName() + " " + c.getTeacherIndex());
+			tLbl = new JLabel(c.getTeacherIndex() == -1?"No teacher":c.getTeacherName());
 			if(c.getTeacherIndex() == -1) tLbl.setForeground(Color.RED);
 			else tLbl.setForeground(Color.BLUE);
 		}

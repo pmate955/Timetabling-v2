@@ -11,8 +11,7 @@ import Visualization.TimeTableFrame;
 
 public class Main {
 
-	public static void main(String[] args) {
-		GreedySolve g = new GreedySolve("time2.txt");			
+	public static void main(String[] args) {		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
