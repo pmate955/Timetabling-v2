@@ -13,7 +13,7 @@ import Datatypes.Teacher;
 
 public class VisualSlot extends JPanel {
 	
-	public VisualSlot(Course c, List<Teacher> t) {
+	public VisualSlot(Course c) {
 		
 		setLayout(new BorderLayout());
 		setBorder(new LineBorder(Color.BLACK));
@@ -25,7 +25,7 @@ public class VisualSlot extends JPanel {
 		} 
 		else{
 			lbl = new JLabel(c.getName());
-			tLbl = new JLabel(c.getTeacherIndex() == -1?"No teacher":t.get(c.getTeacherIndex()).getName() + " " + c.getTeacherIndex());
+			tLbl = new JLabel(c.getTeacherIndex() == -1?"No teacher":c.getTeacherName() + " " + c.getTeacherIndex());
 			if(c.getTeacherIndex() == -1) tLbl.setForeground(Color.RED);
 			else tLbl.setForeground(Color.BLUE);
 		}

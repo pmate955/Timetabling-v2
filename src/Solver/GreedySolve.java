@@ -64,7 +64,7 @@ public class GreedySolve {
 	
 	public void printSolution(){
 		System.out.println("Solution: ");
-		for(Room r: rooms) r.print(teachers);
+		for(Room r: rooms) r.print();
 	}
 	
 	public void printTeachers(){
@@ -100,7 +100,7 @@ public class GreedySolve {
 		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(newNode.teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
 			//combo.getCourse().setT(teachers.get(teacherIndexes.get(newNode.teacherIndex)));					//Save the combos
-			combo.getCourse().setTeacherIndex(teacherIndexes.get(newNode.teacherIndex));
+			combo.getCourse().setTeacherIndex(teacherIndexes.get(newNode.teacherIndex), teacher.getName());
 			Room rm = solved.get(solved.lastIndexOf(r));
 			rm.addCombo(combo);
 			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(newNode.slotIndex+i, newNode.roomIndex,newNode.teacherIndex));			
@@ -177,24 +177,24 @@ public class GreedySolve {
 				solution.get(solution.indexOf(currentNode.getR())).deleteCombo(currentNode);
 				solution.get(solution.indexOf(secondNode.getR())).addCombo(secondNode);
 				System.out.println(" to " + this.getValue(nodes));
-				currentNode.print(teachers);
-				secondNode.print(teachers);
+				currentNode.print();
+				secondNode.print();
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
 				System.out.print(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
 				solution.get(solution.indexOf(currentNode.getR())).deleteCombo(currentNode);		//Delete courses from room
 				solution.get(solution.indexOf(secondNode.getR())).deleteCombo(secondNode);
-				currentNode.print(teachers);
-				secondNode.print(teachers);
+				currentNode.print();
+				secondNode.print();
 				int neighborIndex = this.getIndex(nodes, secondNode);	
 				this.swap(currentNode, secondNode);
 				nodes.set(neighborIndex, currentNode);	
 				nodes.set(firstNodeIndex, secondNode);
 				solution.get(solution.indexOf(currentNode.getR())).addCombo(currentNode);
 				solution.get(solution.indexOf(secondNode.getR())).addCombo(secondNode);
-				nodes.get(firstNodeIndex).print(teachers);
-				nodes.get(neighborIndex).print(teachers);
+				nodes.get(firstNodeIndex).print();
+				nodes.get(neighborIndex).print();
 				System.out.println(" to " + this.getValue(nodes) + " " + globalMinimum);
 				foundBetter = true;
 			} else {
@@ -253,15 +253,6 @@ public class GreedySolve {
 		return value;
 	}
 	
-	private List<TimeSlot> getSlotTeacher(int day, Teacher t, List<Combo> input){		
-		for(Combo c : input){
-			if(c.getCourse().getT().getName().equals(t.getName())){
-				return c.getCourse().getT().getAvailabilityAtDay(day);
-			}
-		}
-		return null;
-	}
-	boolean test = true;
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){
 		List<Combo> output = new ArrayList<Combo>();
 		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
@@ -269,7 +260,7 @@ public class GreedySolve {
 			int cIndex = c.getCourse().getTeacherIndex();
 			if(c.getSize() == input.getSize() && firstIndex != cIndex){
 				if(teachers.get(firstIndex).isAvailable(c.getSlotList()) && teachers.get(cIndex).isAvailable(input.getSlotList())){
-			//		output.add(c);	
+					output.add(c);	
 				}					
 			}
 		}
@@ -286,10 +277,6 @@ public class GreedySolve {
 					}
 				}
 				if(!isBad && teachers.get(input.getCourse().getTeacherIndex()).isAvailable(newCombo.getSlotList())){
-					if(test && input.getCourse().getName().equals("OS_5")){
-						teachers.get(input.getCourse().getTeacherIndex()).print();
-						test = false;
-					}
 					output.add(newCombo);
 				}
 			}

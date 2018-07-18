@@ -13,7 +13,7 @@ import Datatypes.Teacher;
 
 public class VisualRoom extends JPanel{
 
-	public VisualRoom(Room r, List<Teacher> t)
+	public VisualRoom(Room r)
 	{
 		GridBagLayout gl = new GridBagLayout();
 		double[] weights = new double[r.getSlots()];
@@ -38,29 +38,29 @@ public class VisualRoom extends JPanel{
 			for (int j = 0; j < r.getSlots(); j++) {
 				if(r.getCourseByPos(i, j) == null)
 				{
-					if(current != null) addCourse(current, i, startSlot,t);
+					if(current != null) addCourse(current, i, startSlot);
 					current = r.getCourseByPos(i, j);
-					addCourse(current, i, j,t);
+					addCourse(current, i, j);
 					startSlot = j;
 				}
 				else if(current != null && r.getCourseByPos(i, j).getName().equals(current.getName())) continue;
 				else
 				{
 					//create visualslot for current
-					if(current != null) addCourse(current, i, startSlot,t);
+					if(current != null) addCourse(current, i, startSlot);
 					//init new current
 					current = r.getCourseByPos(i, j);
 					startSlot = j;
 				}
 			}
 			//add final course
-			if(current != null) addCourse(current, i, startSlot,t);
+			if(current != null) addCourse(current, i, startSlot);
 		}
 	}
 	
-	private void addCourse(Course c, int x, int y, List<Teacher> t)
+	private void addCourse(Course c, int x, int y)
 	{
-		VisualSlot vs = new VisualSlot(c,t);
+		VisualSlot vs = new VisualSlot(c);
 		GridBagConstraints gc = new GridBagConstraints();
 		gc.weightx = 1;
 		gc.weighty = 1;

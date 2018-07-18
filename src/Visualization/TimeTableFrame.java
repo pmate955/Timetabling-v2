@@ -97,8 +97,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
 		for(Room r : g.rooms){
-			r.print(g.teachers);
-			VisualRoom vr = new VisualRoom(r,g.teachers);
+			r.print();
+			VisualRoom vr = new VisualRoom(r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			p.add(vr);
 		}
@@ -121,7 +121,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		Instant end = Instant.now();				
 		System.out.println();
 		System.out.println("==========Optimization info============");
-		System.out.println(g.runCount + " times started the method");
+		System.out.println(GreedySolve.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
 		
 	}

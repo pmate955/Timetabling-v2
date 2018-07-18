@@ -131,8 +131,8 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.r = r;
 	}
 
-	public void print(List<Teacher> te){
-		System.out.println(t.toString() + " | " + (c==null?"_":c.toString(te)) + " " + r.getName() + " " + t.size());
+	public void print(){
+		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size());
 	}
 	
 	public void setFixed(){

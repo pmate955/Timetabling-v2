@@ -10,14 +10,16 @@ public class Course {
 	private boolean isFixed;
 	private String topicname;
 	private int teacherIndex;
+	private String teacherName;
 	
-	public Course(String name, String topicname,  int slots, int capacity, int teacherIndex){
+	public Course(String name, String topicname,  int slots, int capacity, int teacherIndex, String teacherName){
 		this.name = name;
 		this.capacity = capacity;
 		this.slots = slots;
 		this.isFixed = false;
 		this.topicname = topicname;
 		this.teacherIndex = teacherIndex;
+		this.teacherName = teacherName;
 	}
 	
 	public Course(Course input){
@@ -28,6 +30,7 @@ public class Course {
 		this.topicname = input.topicname;
 		this.T = input.getT();
 		this.teacherIndex = input.teacherIndex;
+		this.teacherName = input.teacherName;
 	}
 
 	public String getTopicname() {
@@ -53,6 +56,10 @@ public class Course {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public String getTeacherName() {
+		return teacherName;
+	}
 
 	public int getCapacity() {
 		return capacity;
@@ -62,8 +69,8 @@ public class Course {
 		this.capacity = capacity;
 	}
 
-	public String toString(List<Teacher> te){
-		return "Name: " + this.name + " Teacher: " + (teacherIndex==-1?" null ":te.get(teacherIndex).getName()) + " Students: " + this.capacity + " slots: " + this.slots;
+	public String toString(){
+		return "Name: " + this.name + " Teacher: " + (teacherIndex==-1?" null ":teacherName) + " Students: " + this.capacity + " slots: " + this.slots;
 	}
 	
 	public boolean isFixed(){
@@ -72,23 +79,15 @@ public class Course {
 	
 	public void setFixed(){
 		this.isFixed = true;
-		//System.out.println("setfixed");
 	}
 	
-	
-	
-	/**
-	 * @return the teacherIndex
-	 */
 	public int getTeacherIndex() {
 		return teacherIndex;
 	}
 
-	/**
-	 * @param teacherIndex the teacherIndex to set
-	 */
-	public void setTeacherIndex(int teacherIndex) {
+	public void setTeacherIndex(int teacherIndex, String teacherName) {
 		this.teacherIndex = teacherIndex;
+		this.teacherName = teacherName;
 	}
 
 	@Override

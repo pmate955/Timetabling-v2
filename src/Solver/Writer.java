@@ -15,7 +15,7 @@ public class Writer {
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
 			for(Room r : solution){
-				bw.write(r.toString(te));
+				bw.write(r.toString());
 			}
 			bw.close();
 		} catch (IOException e) {
