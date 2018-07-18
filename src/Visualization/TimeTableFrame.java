@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -30,6 +31,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JPanel contentPane;
 	private File selectedFile;
 	private GreedySolve g;
+	private boolean useNew;
 	
 	public TimeTableFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,6 +42,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 		setContentPane(contentPane);
 		setVisible(true);
+		this.useNew = false;
 	}
 
 	private JMenuBar addMenu() {
@@ -82,8 +85,11 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			t.start();
 		});
 		solverMenu.add(startSolver);
-		
-		
+		JCheckBox chk = new JCheckBox("Use new method");
+		chk.addActionListener((e)->{
+			this.useNew = !useNew;
+		});
+		solverMenu.add(chk);
 		bar.add(fileMenu);
 		bar.add(solverMenu);
 		return bar;
@@ -97,7 +103,6 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
 		for(Room r : g.rooms){
-			r.print();
 			VisualRoom vr = new VisualRoom(r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			p.add(vr);
@@ -115,8 +120,12 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
 			System.out.println("Success");
-			g.solveHillClimb(g.rooms);
-			showSolution(g);
+			//g.solveHillClimb(g.rooms);
+			if(useNew) g.secondPhase(g.rooms);
+			else g.solveHillClimb(g.rooms);
+			//showSolution(g);
+			VisualFrame vf = new VisualFrame(g);
+			vf.setVisible(true);
 		}
 		Instant end = Instant.now();				
 		System.out.println();

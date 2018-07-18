@@ -117,7 +117,7 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		if (r == null) {
 			if (other.r != null)
 				return false;
-		} else if (!r.equals(other.r))
+		} else if (!r.getName().equals(other.r.getName()))
 			return false;
 		if (t == null) {
 			if (other.t != null)
@@ -133,6 +133,10 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 
 	public void print(){
 		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size());
+	}
+	
+	public String toString(){
+		return t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size();
 	}
 	
 	public void setFixed(){

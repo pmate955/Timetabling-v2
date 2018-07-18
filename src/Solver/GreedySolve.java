@@ -111,7 +111,164 @@ public class GreedySolve {
 		return solveBackTrackHard2(cs,solved,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
+	
+	public void secondPhase(List<Room> solution){
+		List<Combo> nodes = this.getNodes(solution);		//Load the current solution
+		HashMap<String,List<String>> taboo = new HashMap<String,List<String>>();
+		int beforeValue = this.getValue(nodes);
+		int n = 1;
+		while(true){
+			System.out.println("---------------------New Iteration-------------------");
+			this.solveHillClimb2(nodes);
+			int secValue = this.getValue(nodes);
+			if(secValue < beforeValue) {
+				this.setSolution(nodes, solution);
+				this.resetTeachers(solution);
+				beforeValue = secValue;
+				n = 1;
+				taboo = new HashMap<String,List<String>>();
+				System.out.println("Save solution");
+			} else {
+				nodes = this.getNodes(solution);
+			}
+			while(secValue!=0 && n < nodes.size() && !this.stepN(n, nodes, taboo)){
+				n++;
+			};
+			System.out.println(n);
+			if(n >= nodes.size() || secValue == 0) break;
+		}
+		
+	}
+	
+	private void resetTeachers(List<Room> solution) {
+		for(Teacher te : teachers) te.clearAvailability();
+		for(Room r : solution){
+			for(Combo c : r.getCourses()){
+				teachers.get(c.c.getTeacherIndex()).addUnavailablePeriod(c.t);
+			}
+		}
+		
+	}
 
+	private boolean stepN(int n, List<Combo> nodes, HashMap<String,List<String>> taboo){
+		int startIndex = n;
+		Combo start = nodes.get(startIndex);			//first node
+		List<Combo> neighbors = this.getNeighbors2(nodes, start);
+		for(Combo node : neighbors){
+			if(taboo.get(start.toString()) == null){
+				taboo.put(start.toString(),new ArrayList<String>());
+			} else if(taboo.get(start.toString()).contains(node.toString())) continue;
+			taboo.get(start.toString()).add(node.toString());
+			if(node.getCourse()==null){								//Place the combo to the new place
+				nodes.set(startIndex, node);
+				this.setCourse(node, start);
+			} else {
+				int neighborIndex = this.getIndex(nodes, node);
+				this.swap(start, node);
+				nodes.set(startIndex, start);
+				nodes.set(neighborIndex, node);	
+			}
+			return true;
+		}
+		return false;
+		
+	}
+	
+	public List<Combo> getNodes(List<Room> input){
+		List<Combo> nodes = new ArrayList<Combo>();			//Get the list of all node
+		for(Room r : input){
+			nodes.addAll(r.getCourses());			
+		}
+		return nodes;
+	}
+	
+	public void setSolution(List<Combo> nodes, List<Room> solution){
+		for(Room r : solution){
+			r.clearRoom();
+		}
+		for(Combo c : nodes){
+			solution.get(solution.indexOf(c.getR())).addCombo(c);
+		}
+	}
+	
+	public void solveHillClimb2(List<Combo> nodes){
+		
+		int iterationNumber = 0;
+		boolean foundBetter = true;
+		while(foundBetter){
+			iterationNumber++;
+			int actualNodeIndex = 0;
+			int firstNodeIndex = -1;
+			Combo secondNode = null;
+			Combo currentNode;
+			int swapMode = 0;
+			int globalMinimum = this.getValue(nodes);
+			while(actualNodeIndex < nodes.size()){
+				currentNode = nodes.get(actualNodeIndex);
+				List<Combo> neighbors = this.getNeighbors2(nodes, currentNode);
+				int startValue = this.getValue(nodes);
+				for(Combo node : neighbors){
+					int localSwapMode = 0;
+					if(node.getCourse()==null){								//Place the combo to the new place
+						nodes.set(actualNodeIndex, node);
+						this.setCourse(node, currentNode);
+					} else {
+						localSwapMode = 1;
+						int neighborIndex = this.getIndex(nodes, node);
+						this.swap(currentNode, node);
+						nodes.set(actualNodeIndex, currentNode);
+						nodes.set(neighborIndex, node);	
+					}
+					int newValue =  this.getValue(nodes);
+					if(localSwapMode==1){				//only for switch
+						this.swap(currentNode, node);					
+						int neighborIndex = this.getIndex(nodes, node);
+						nodes.set(actualNodeIndex, currentNode);
+						nodes.set(neighborIndex, node);	
+					} else if(localSwapMode == 0){
+						this.setCourse(currentNode, node);
+					}
+					nodes.set(actualNodeIndex, currentNode);
+					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
+						firstNodeIndex=actualNodeIndex;
+						globalMinimum = newValue;
+						startValue = newValue;
+						secondNode = node;
+						swapMode = localSwapMode;
+					}
+				}
+				actualNodeIndex++;
+			}
+			if(secondNode != null && swapMode == 0){							//Better course pair to swap
+				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
+			
+				currentNode = nodes.get(firstNodeIndex);
+				this.setCourse(secondNode, currentNode);
+				nodes.set(firstNodeIndex, secondNode);
+				System.out.println(" to " + this.getValue(nodes));
+				currentNode.print();
+				secondNode.print();
+				foundBetter = true;
+			} else if(secondNode != null && swapMode == 1){
+				System.out.print(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
+				currentNode = nodes.get(firstNodeIndex);
+				currentNode.print();
+				secondNode.print();
+				int neighborIndex = this.getIndex(nodes, secondNode);	
+				this.swap(currentNode, secondNode);
+				nodes.set(neighborIndex, currentNode);	
+				nodes.set(firstNodeIndex, secondNode);
+				nodes.get(firstNodeIndex).print();
+				nodes.get(neighborIndex).print();
+				System.out.println(" to " + this.getValue(nodes) + " " + globalMinimum);
+				foundBetter = true;
+			} else {
+				foundBetter = false;
+			}
+		}
+		
+		
+	}
 	
 	public void solveHillClimb(List<Room> solution){
 		List<Combo> nodes = new ArrayList<Combo>();			//Get the list of all node
@@ -145,10 +302,6 @@ public class GreedySolve {
 						nodes.set(neighborIndex, node);	
 					}
 					int newValue =  this.getValue(nodes);
-					/*if(erroneus(nodes)){
-						System.out.println("ERRORRRRR " + localSwapMode);
-						newValue = Integer.MAX_VALUE;
-					}*/
 					if(localSwapMode==1){				//only for switch
 						this.swap(currentNode, node);					
 						int neighborIndex = this.getIndex(nodes, node);
@@ -158,7 +311,7 @@ public class GreedySolve {
 						this.setCourse(currentNode, node);
 					}
 					nodes.set(actualNodeIndex, currentNode);
-					if(newValue < startValue && newValue < globalMinimum){			//If we found better global value
+					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
 						firstNodeIndex=actualNodeIndex;
 						globalMinimum = newValue;
 						startValue = newValue;
@@ -201,6 +354,8 @@ public class GreedySolve {
 				foundBetter = false;
 			}
 		}
+		
+		
 	}
 	
 	private int getIndex(List<Combo> nodes, Combo input){
@@ -251,6 +406,38 @@ public class GreedySolve {
 			}
 		}
 		return value;
+	}
+	
+	public List<Combo> getNeighbors2(List<Combo> solution, Combo input){
+		List<Combo> output = new ArrayList<Combo>();
+		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
+			int firstIndex = input.getCourse().getTeacherIndex();
+			int cIndex = c.getCourse().getTeacherIndex();
+			if(c.getSize() == input.getSize() && firstIndex != cIndex){
+				if(teachers.get(firstIndex).isAvailable(c.getSlotList()) && teachers.get(cIndex).isAvailable(input.getSlotList())){
+					output.add(c);	
+				}					
+			}
+		}
+		for(TimeSlot actual : timeslots){			//Get the empty slots
+			if(actual.getSlot()+input.getSize()>=INPUT_SLOTS) continue;
+			Combo newCombo = null;
+			for(Room r : rooms){
+				boolean isBad = false;
+				newCombo = new Combo(input.getSize(), actual, r);
+				for(Combo c : solution){
+					if(c.getR().getName().equals(newCombo.getR().getName()) && newCombo.hasConflict(c)){
+						isBad = true;
+						break;
+					}
+				}
+				if(!isBad && teachers.get(input.getCourse().getTeacherIndex()).isAvailable(newCombo.getSlotList())){
+					output.add(newCombo);
+				}
+			}
+			
+		}
+		return output;
 	}
 	
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){

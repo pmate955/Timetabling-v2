@@ -73,7 +73,7 @@ public class Room {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + capacity;
-		result = prime * result + ((courses == null) ? 0 : courses.hashCode());
+	//	result = prime * result + ((courses == null) ? 0 : courses.hashCode());
 		result = prime * result + days;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + slots;
