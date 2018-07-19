@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -37,6 +38,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private boolean useNewMethod;
 	private JSpinner tryCountSpinner;
 	private JSpinner switchCountSpinner;
+	private JCheckBox useSwapBox;
+	private JLabel nameLabel;
 	
 	public TimeTableFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,6 +74,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				SpinnerModel model =
 				        new SpinnerNumberModel(1,1,g.courses.size(),1);   
 				switchCountSpinner.setModel(model);
+				nameLabel.setText(selectedFile.getAbsolutePath());
 			}
 		});
 		
@@ -80,15 +84,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		});
 		fileMenu.add(open);
 		fileMenu.add(exit);
-		JMenu solverMenu = new JMenu("Solver");
-		JMenuItem startSolver = new JMenuItem("Start");
-		startSolver.addActionListener((l)->{
-			Thread t = new Thread(this);
-			t.start();
-		});
-		solverMenu.add(startSolver);
 		bar.add(fileMenu);
-		bar.add(solverMenu);
 		return bar;
 	}
 	
@@ -96,22 +92,40 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		JPanel p = new JPanel();
 		p.setLayout(new GridLayout(0,1));
 		JScrollPane scrollPane = new JScrollPane();
+		JPanel solverPanel = new JPanel();
+		solverPanel.setBorder(BorderFactory.createTitledBorder("Start solver"));
+		solverPanel.setLayout(new GridLayout(1,2));
+		nameLabel = new JLabel("No file selected");
+		solverPanel.add(nameLabel);
+		JButton startButton = new JButton("Start solver");
+		startButton.addActionListener((e)->{
+			if(selectedFile == null) {
+				JOptionPane.showMessageDialog(this, "No input file :'(");
+			} else {
+				Thread t = new Thread(this);
+				t.start();
+			}
+		});
+		solverPanel.add(startButton);
+		contentPane.add(solverPanel);
+		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
 		softPanel.setLayout(new GridLayout(3,2));
 		tryCountSpinner = new JSpinner();		
 		switchCountSpinner = new JSpinner();
 		JCheckBox useNewBox = new JCheckBox("Use new shotgun method");
+		useSwapBox = new JCheckBox("Swap taboo");
 		useNewBox.setSelected(true);
 		useNewBox.addActionListener((l)->{
-
+			useSwapBox.setEnabled(this.useNewMethod);
 			tryCountSpinner.setEnabled(this.useNewMethod);
 			switchCountSpinner.setEnabled(this.useNewMethod);
 			this.useNewMethod = !this.useNewMethod;
 		});
 		
 		softPanel.add(useNewBox);
-		softPanel.add(new JLabel(""));
+		softPanel.add(useSwapBox);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
 		softPanel.add(new JLabel("Courses to switch"));
