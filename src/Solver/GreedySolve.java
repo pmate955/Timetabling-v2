@@ -25,7 +25,8 @@ public class GreedySolve {
 	public Map<String,List<Integer>> courseTeacher;
 	public int INPUT_DAYS;
 	public int INPUT_SLOTS;
-	public static int runCount = 0;
+	public int runCount = 0;
+	public int bestValue;
 	
 	public GreedySolve(String filename){
 		this.r = new Reader(filename);
@@ -141,14 +142,14 @@ public class GreedySolve {
 		
 	}
 	
-	public void secondPhase2(List<Room> solution){
+	public boolean secondPhase2(List<Room> solution, int[] inputArgs){
 				//Load the current solution
 		List<Combo> tabo = new ArrayList<Combo>();
 		List<Combo> nodes = this.getNodes(solution);
 		int startValue = this.getValue(nodes);
-		for(int i = 0; i < 10; i++){
+		for(int i = 0; i < inputArgs[0]; i++){
 			
-			tabo.addAll(nodes.subList(0, nodes.size()/2));
+			tabo.addAll(nodes.subList(0, inputArgs[1]));
 			
 			
 			int endValue = this.solveHillClimb(solution);
@@ -156,16 +157,17 @@ public class GreedySolve {
 				System.out.println("-SAVE--------------------SAVE-------------");
 				saveSolution(solution);
 				startValue = endValue;
+				bestValue = endValue;
 			} 
-			if(i==9) break;
+			if(i==inputArgs[0]-1) break;
 			this.clearData();
 			if(!this.solveBackTrackHard2(this.courses, this.rooms, tabo, new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
 				System.out.println("Not find solution :(");
-				break;
+				return false;
 			};
 			nodes = this.getNodes(solution);
 		}
-		
+		return true;
 	}
 	
 	private void saveSolution(List<Room> solution){

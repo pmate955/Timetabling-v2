@@ -26,7 +26,7 @@ public class VisualFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 650, 400);
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		setTitle("Solution " + timestamp.toString());
+		setTitle("Solution " + timestamp.toString() + " Value: " + g.bestValue);
 		this.g=g;
 		contentPane = new JPanel();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
