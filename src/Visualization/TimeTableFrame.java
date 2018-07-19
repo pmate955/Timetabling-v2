@@ -118,9 +118,9 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		useSwapBox = new JCheckBox("Swap taboo");
 		useNewBox.setSelected(true);
 		useNewBox.addActionListener((l)->{
-			useSwapBox.setEnabled(this.useNewMethod);
-			tryCountSpinner.setEnabled(this.useNewMethod);
-			switchCountSpinner.setEnabled(this.useNewMethod);
+			useSwapBox.setEnabled(!this.useNewMethod);
+			tryCountSpinner.setEnabled(!this.useNewMethod);
+			switchCountSpinner.setEnabled(!this.useNewMethod);
 			this.useNewMethod = !this.useNewMethod;
 		});
 		
@@ -149,9 +149,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			//g.solveHillClimb(g.rooms);
 			if(useNewMethod){
 				int iterations = (int)tryCountSpinner.getValue();
-				int[] args = new int[2];
+				int[] args = new int[3];
 				args[0] = iterations;
 				args[1] = (int)switchCountSpinner.getValue();
+				args[2] = (useSwapBox.isSelected()?1:0);
 				if(iterations > 0) {
 					if(!g.secondPhase2(g.rooms,args)){
 						JOptionPane.showMessageDialog(this, "Too much iterations, but the best solution you will see ");
@@ -159,7 +160,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				} else {
 					JOptionPane.showMessageDialog(this, "Error, not positive iteration number!");
 				}
-			} else g.solveHillClimb(g.rooms);
+			} else{
+				g.bestValue = g.solveHillClimb(g.rooms);
+				g.saveSolution(g.rooms);
+			}
 			VisualFrame vf = new VisualFrame(g);
 			vf.setVisible(true);
 		}

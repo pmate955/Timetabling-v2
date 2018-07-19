@@ -40,6 +40,14 @@ public class Room {
 		return null;
 	};
 	
+	public Combo getComboByPos(int day, int slot){
+		TimeSlot t = new TimeSlot(day,slot);
+		for(Combo c : courses){
+			if(c.getSlotList().contains(t)) return c;
+		}
+		return null;
+	};
+	
 	public boolean isUsed(TimeSlot t){
 		for(Combo c : courses){
 			if(c.getSlotList().contains(t)) return true;

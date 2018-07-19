@@ -8,24 +8,27 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 	
 	public Course c;
 	public List<TimeSlot> t;
-	public Room r;
+	public int roomIndex;
+	public String roomName;
 	
-	public Combo(Course c, TimeSlot start, Room r){
+	public Combo(Course c, TimeSlot start, int roomIndex, String roomName){
 		this.c = c;
-		this.r = r;
 		this.t = new ArrayList<TimeSlot>();
 		for(int i = 0; i < c.getSlots();i++){
 			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
 		}
+		this.roomIndex = roomIndex;
+		this.roomName = roomName;
 	}
 	
-	public Combo(int size, TimeSlot start, Room r){
+	public Combo(int size, TimeSlot start, int roomIndex, String roomName){
 		this.c = null;
-		this.r = r;
 		this.t = new ArrayList<TimeSlot>();
 		for(int i = 0; i < size;i++){
 			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
 		}
+		this.roomIndex = roomIndex;
+		this.roomName = roomName;
 	}
 	
 	public Course getCourse(){
@@ -34,7 +37,7 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 
 	public boolean hasConflict(Combo input){
 		boolean out = false;
-		if(this.r.getName().equals(input.getR().getName())){
+		if(this.roomIndex==input.roomIndex){
 			if(this.contains(input.getSlotList())) return true;
 		}
 		return out;
@@ -53,9 +56,6 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return !Collections.disjoint(t, input);
 	}
 	
-	public Room getR() {
-		return r;
-	}
 	
 	public void setC(Course c) {
 		this.c = c;
@@ -81,16 +81,23 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return t.size();
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((c == null) ? 0 : c.hashCode());
-		result = prime * result + ((r == null) ? 0 : r.hashCode());
+		result = prime * result + roomIndex;
+		result = prime * result + ((roomName == null) ? 0 : roomName.hashCode());
 		result = prime * result + ((t == null) ? 0 : t.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -105,10 +112,12 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 				return false;
 		} else if (!c.equals(other.c))
 			return false;
-		if (r == null) {
-			if (other.r != null)
+		if (roomIndex != other.roomIndex)
+			return false;
+		if (roomName == null) {
+			if (other.roomName != null)
 				return false;
-		} else if (!r.getName().equals(other.r.getName()))
+		} else if (!roomName.equals(other.roomName))
 			return false;
 		if (t == null) {
 			if (other.t != null)
@@ -118,16 +127,13 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return true;
 	}
 
-	public void setR(Room r) {
-		this.r = r;
-	}
 
 	public void print(){
-		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size());
+		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + roomName + " " + t.size());
 	}
 	
 	public String toString(){
-		return t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName() + " " + t.size();
+		return t.toString() + " | " + (c==null?"_":c.toString()) + " " + roomName + " " + t.size();
 	}
 	
 	public void setFixed(){

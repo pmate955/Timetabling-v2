@@ -70,6 +70,10 @@ public class Teacher {
 		}
 		return true;
 	}
+	public boolean isAvailable(TimeSlot input){
+		if(availability.contains(input)) return false;	
+		return true;
+	}
 	
 	public void printUnavailable(){
 		System.out.println(this.name);
