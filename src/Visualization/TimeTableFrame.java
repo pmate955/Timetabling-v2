@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 
+import Datatypes.Combo;
 import Datatypes.IndexCombo;
 import Datatypes.Room;
 import Solver.GreedySolve;
@@ -118,10 +119,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
-		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
+		if(g.solveBackTrackHard2(g.courses, g.rooms,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
 			System.out.println("Success");
 			//g.solveHillClimb(g.rooms);
-			if(useNew) g.secondPhase(g.rooms);
+			if(useNew) g.secondPhase2(g.rooms);
 			else g.solveHillClimb(g.rooms);
 			//showSolution(g);
 			VisualFrame vf = new VisualFrame(g);

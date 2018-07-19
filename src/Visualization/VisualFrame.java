@@ -60,7 +60,7 @@ public class VisualFrame extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
-		for(Room r : g.rooms){
+		for(Room r : g.saved){
 			VisualRoom vr = new VisualRoom(r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			p.add(vr);

@@ -32,20 +32,6 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return this.c;
 	}
 
-	public void swap(Combo input){
-		Course c = input.getCourse();
-		if(!this.c.getT().getName().equals(input.c.getT().getName())){
-			this.c.getT().deleteUnavailablePeriod(t);		//Delete period of this course
-			this.c.getT().addUnavailablePeriod(input.t);
-		}
-		input.setC(new Course(this.c));
-		if(!this.c.getT().getName().equals(input.c.getT().getName())){
-			c.getT().deleteUnavailablePeriod(input.t);
-			c.getT().addUnavailablePeriod(this.t);
-		}
-		this.c = new Course(c);
-	}
-	
 	public boolean hasConflict(Combo input){
 		boolean out = false;
 		if(this.r.getName().equals(input.getR().getName())){
@@ -75,15 +61,20 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.c = c;
 	}
 	
-	public void setCourse(Combo c){
-		c.c.getT().deleteUnavailablePeriod(c.getSlotList());		//Delete unavailable periods from last course
-		this.c = new Course(c.c);										//Add course to current
-		this.c.getT().addUnavailablePeriod(this.t);					//Add unavailable periods to teacher
-	}
-
-	
 	public TimeSlot getFirstSlot(){
 		return this.t.get(0);
+	}
+	
+	public TimeSlot getLastSlot(){
+		return this.t.get(t.size()-1);
+	}
+	
+	public List<TimeSlot> getFirstNSlot(int n){
+		return t.subList(0, n-1);
+	}
+	
+	public List<TimeSlot> getLeftSlots(int from){
+		return t.subList(from, t.size()-1);
 	}
 	
 	public int getSize(){

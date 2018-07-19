@@ -23,15 +23,4 @@ public class Main {
 		});
 	}
 	
-	
-	
-	public static void solveTest(GreedySolve g){
-		List<IndexCombo> bad = new ArrayList<IndexCombo>();
-		System.out.println("Start to test");
-		if(g.solveBackTrackHard2(g.courses, g.rooms, bad, g.teachers, new IndexCombo(0,0,0))){
-			g.printSolution();
-			System.out.println("Success");
-		}
-	}
-	
 }

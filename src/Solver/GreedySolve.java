@@ -17,6 +17,7 @@ import Datatypes.Topic;
 public class GreedySolve {
 	private Reader r;
 	public List<Room> rooms;
+	public List<Room> saved;
 	public List<Teacher> teachers;
 	public List<Course> courses;
 	public List<Topic> topics;
@@ -32,6 +33,7 @@ public class GreedySolve {
 		this.INPUT_DAYS = r.days;
 		this.INPUT_SLOTS = r.slots;
 		this.rooms = new ArrayList<Room>();
+		this.saved = new ArrayList<Room>();
 		this.courses = new ArrayList<Course>();
 		this.teachers = new ArrayList<Teacher>();
 		this.topics = new ArrayList<Topic>();
@@ -71,7 +73,7 @@ public class GreedySolve {
 		for(Teacher t : teachers) t.print();
 	}
 	
-	public boolean solveBackTrackHard2(List<Course> cs, List<Room> solved, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
+	public boolean solveBackTrackHard2(List<Course> cs, List<Room> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
 		runCount++;
 		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
@@ -93,22 +95,21 @@ public class GreedySolve {
 		Room r = rooms.get(newNode.roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
 		Combo combo = new Combo(c,t,r);
-		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
+		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
 			newNode.slotIndex++;
-			return solveBackTrackHard2(cs,solved,used,teachers,newNode);		
+			return solveBackTrackHard2(cs,solved,notAllowed,used,teachers,newNode);		
 		}
 		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(newNode.teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
-			//combo.getCourse().setT(teachers.get(teacherIndexes.get(newNode.teacherIndex)));					//Save the combos
 			combo.getCourse().setTeacherIndex(teacherIndexes.get(newNode.teacherIndex), teacher.getName());
 			Room rm = solved.get(solved.lastIndexOf(r));
 			rm.addCombo(combo);
 			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(newNode.slotIndex+i, newNode.roomIndex,newNode.teacherIndex));			
 			cs.remove(c);
-			return solveBackTrackHard2(cs,solved,used,teachers,new IndexCombo(0,0,0));		//We going down the tree with the next course
+			return solveBackTrackHard2(cs,solved,notAllowed,used,teachers,new IndexCombo(0,0,0));		//We going down the tree with the next course
 		}
 		newNode.slotIndex++;
-		return solveBackTrackHard2(cs,solved,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
+		return solveBackTrackHard2(cs,solved,notAllowed,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
 	
@@ -140,6 +141,40 @@ public class GreedySolve {
 		
 	}
 	
+	public void secondPhase2(List<Room> solution){
+				//Load the current solution
+		List<Combo> tabo = new ArrayList<Combo>();
+		List<Combo> nodes = this.getNodes(solution);
+		int startValue = this.getValue(nodes);
+		for(int i = 0; i < 10; i++){
+			
+			tabo.addAll(nodes.subList(0, nodes.size()/2));
+			
+			
+			int endValue = this.solveHillClimb(solution);
+			if(endValue<startValue){
+				System.out.println("-SAVE--------------------SAVE-------------");
+				saveSolution(solution);
+				startValue = endValue;
+			} 
+			if(i==9) break;
+			this.clearData();
+			if(!this.solveBackTrackHard2(this.courses, this.rooms, tabo, new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+				System.out.println("Not find solution :(");
+				break;
+			};
+			nodes = this.getNodes(solution);
+		}
+		
+	}
+	
+	private void saveSolution(List<Room> solution){
+		saved.clear();
+		for(Room r : solution){
+			saved.add(new Room(r));
+		}
+	}
+	
 	private void resetTeachers(List<Room> solution) {
 		for(Teacher te : teachers) te.clearAvailability();
 		for(Room r : solution){
@@ -153,7 +188,7 @@ public class GreedySolve {
 	private boolean stepN(int n, List<Combo> nodes, HashMap<String,List<String>> taboo){
 		int startIndex = n;
 		Combo start = nodes.get(startIndex);			//first node
-		List<Combo> neighbors = this.getNeighbors2(nodes, start);
+		List<Combo> neighbors = this.getSameSizeNeighbors(nodes, start);
 		for(Combo node : neighbors){
 			if(taboo.get(start.toString()) == null){
 				taboo.put(start.toString(),new ArrayList<String>());
@@ -205,7 +240,7 @@ public class GreedySolve {
 			int globalMinimum = this.getValue(nodes);
 			while(actualNodeIndex < nodes.size()){
 				currentNode = nodes.get(actualNodeIndex);
-				List<Combo> neighbors = this.getNeighbors2(nodes, currentNode);
+				List<Combo> neighbors = this.getSameSizeNeighbors(nodes, currentNode);
 				int startValue = this.getValue(nodes);
 				for(Combo node : neighbors){
 					int localSwapMode = 0;
@@ -270,12 +305,13 @@ public class GreedySolve {
 		
 	}
 	
-	public void solveHillClimb(List<Room> solution){
+	public int solveHillClimb(List<Room> solution){
 		List<Combo> nodes = new ArrayList<Combo>();			//Get the list of all node
 		for(Room r : solution){
 			nodes.addAll(r.getCourses());			
 		}
 		int iterationNumber = 0;
+		int globalMinimum = this.getValue(nodes);
 		boolean foundBetter = true;
 		while(foundBetter){
 			iterationNumber++;
@@ -284,7 +320,7 @@ public class GreedySolve {
 			Combo secondNode = null;
 			Combo currentNode;
 			int swapMode = 0;
-			int globalMinimum = this.getValue(nodes);
+			globalMinimum = this.getValue(nodes);
 			while(actualNodeIndex < nodes.size()){
 				currentNode = nodes.get(actualNodeIndex);
 				List<Combo> neighbors = this.getNeighbors(nodes, currentNode);
@@ -354,7 +390,7 @@ public class GreedySolve {
 				foundBetter = false;
 			}
 		}
-		
+		return globalMinimum;
 		
 	}
 	
@@ -408,7 +444,7 @@ public class GreedySolve {
 		return value;
 	}
 	
-	public List<Combo> getNeighbors2(List<Combo> solution, Combo input){
+	public List<Combo> getSameSizeNeighbors(List<Combo> solution, Combo input){
 		List<Combo> output = new ArrayList<Combo>();
 		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
 			int firstIndex = input.getCourse().getTeacherIndex();
@@ -438,6 +474,43 @@ public class GreedySolve {
 			
 		}
 		return output;
+	}
+	
+	public List<Combo> getDifferentSizeNeighbors(List<Combo> solution, Combo input){
+		List<Combo> output = new ArrayList<Combo>();
+		for(Combo c : solution){
+			if(!c.equals(input) && input.getSize()>c.getSize()){
+				int firstIndex = input.getCourse().getTeacherIndex();		//input = larger course
+				int cIndex = c.getCourse().getTeacherIndex();				//c = smaller one
+				if(teachers.get(firstIndex).isAvailable(c.getSlotList()) && teachers.get(cIndex).isAvailable(input.getFirstNSlot(c.getSize()))){
+					List<TimeSlot> leftslots = new ArrayList<TimeSlot>();
+					int count = input.getSize()-c.getSize();
+					for(int i = 0; i < count; i++) {
+						TimeSlot ts = new TimeSlot(c.getLastSlot().getDay(), c.getLastSlot().getSlot()+i);
+						if(ts.getSlot()>=INPUT_SLOTS) break;
+						Combo n = this.getCombo(solution, ts, c.getR());
+						
+					}
+				}
+			}
+		}
+		return output;
+	}
+	
+	private Combo getCombo(List<Combo> solution, TimeSlot t, Room r){
+		for(Combo c : solution){
+			if(c.getR().getName().equals(r.getName()) && c.getSlotList().contains(t)) return c;
+		}
+		return null;
+	}
+	
+	private boolean isGood(Combo input, Combo second){
+		int firstIndex = input.getCourse().getTeacherIndex();		//input = larger course
+		int cIndex = second.getCourse().getTeacherIndex();				//c = smaller one
+		if(teachers.get(firstIndex).isAvailable(second.getSlotList()) && teachers.get(cIndex).isAvailable(input.getFirstNSlot(second.getSize()))){
+			return true;
+		}
+		return false;
 	}
 	
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){
