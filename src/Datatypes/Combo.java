@@ -6,23 +6,16 @@ import java.util.List;
 
 public class Combo {		//Represents a combination of TimeSlot, Course and Room {later teacher}
 	
-	public Course c;
+	public int courseIndex;
+	public String courseName;
+	public int teacherIndex;
 	public List<TimeSlot> t;
 	public int roomIndex;
 	public String roomName;
 	
-	public Combo(Course c, TimeSlot start, int roomIndex, String roomName){
-		this.c = c;
-		this.t = new ArrayList<TimeSlot>();
-		for(int i = 0; i < c.getSlots();i++){
-			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
-		}
-		this.roomIndex = roomIndex;
-		this.roomName = roomName;
-	}
-	
-	public Combo(int size, TimeSlot start, int roomIndex, String roomName){
-		this.c = null;
+	public Combo(int courseIndex,String courseName, int size, TimeSlot start, int roomIndex, String roomName){
+		this.courseIndex = courseIndex;
+		this.courseName = courseName;
 		this.t = new ArrayList<TimeSlot>();
 		for(int i = 0; i < size;i++){
 			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
@@ -31,8 +24,27 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.roomName = roomName;
 	}
 	
-	public Course getCourse(){
-		return this.c;
+	public Combo(Combo c){
+		this.courseIndex = c.courseIndex;
+		this.courseName = c.courseName;
+		this.t = new ArrayList<TimeSlot>();
+		for(int i = 0; i < c.getSize();i++){
+			t.add(new TimeSlot(c.getFirstSlot().getDay(),c.getFirstSlot().getSlot()+i));
+		}
+		this.roomIndex = c.roomIndex;
+		this.roomName = c.roomName;
+		this.teacherIndex = c.teacherIndex;
+	}
+	
+	public Combo(int size, TimeSlot start, int roomIndex, String roomName){
+		this.courseIndex = -1;
+		this.t = new ArrayList<TimeSlot>();
+		for(int i = 0; i < size;i++){
+			t.add(new TimeSlot(start.getDay(),start.getSlot()+i));
+		}
+		this.roomIndex = roomIndex;
+		this.roomName = roomName;
+		this.teacherIndex = -1;
 	}
 
 	public boolean hasConflict(Combo input){
@@ -54,11 +66,6 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 
 	public boolean contains(List<TimeSlot> input){
 		return !Collections.disjoint(t, input);
-	}
-	
-	
-	public void setC(Course c) {
-		this.c = c;
 	}
 	
 	public TimeSlot getFirstSlot(){
@@ -88,10 +95,12 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((c == null) ? 0 : c.hashCode());
+		result = prime * result + courseIndex;
+		result = prime * result + ((courseName == null) ? 0 : courseName.hashCode());
 		result = prime * result + roomIndex;
 		result = prime * result + ((roomName == null) ? 0 : roomName.hashCode());
 		result = prime * result + ((t == null) ? 0 : t.hashCode());
+		result = prime * result + teacherIndex;
 		return result;
 	}
 
@@ -107,10 +116,12 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		if (getClass() != obj.getClass())
 			return false;
 		Combo other = (Combo) obj;
-		if (c == null) {
-			if (other.c != null)
+		if (courseIndex != other.courseIndex)
+			return false;
+		if (courseName == null) {
+			if (other.courseName != null)
 				return false;
-		} else if (!c.equals(other.c))
+		} else if (!courseName.equals(other.courseName))
 			return false;
 		if (roomIndex != other.roomIndex)
 			return false;
@@ -124,20 +135,18 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 				return false;
 		} else if (!t.equals(other.t))
 			return false;
+		if (teacherIndex != other.teacherIndex)
+			return false;
 		return true;
 	}
 
 
 	public void print(){
-		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + roomName + " " + t.size());
+		System.out.println(t.toString() + " | " + (courseIndex==-1?"_":courseName) + " " + roomName + " " + t.size());
 	}
 	
 	public String toString(){
-		return t.toString() + " | " + (c==null?"_":c.toString()) + " " + roomName + " " + t.size();
-	}
-	
-	public void setFixed(){
-		this.c.setFixed();
+		return t.toString() + " | " + (courseIndex==-1?"_":courseName) + " " + roomName + " " + t.size();
 	}
 	
 	

@@ -27,7 +27,7 @@ public class TimeSlot {
 	}
 	
 	public String toString(){
-		return "Day: " + this.day + " Slot: " + this.slot; 
+		return "day: " + this.day + " slot: " + this.slot; 
 	}
 	
 	public boolean equals(Object o){

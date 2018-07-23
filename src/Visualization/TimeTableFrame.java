@@ -144,26 +144,13 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
-		if(g.solveBackTrackHard2(g.courses, g.rooms,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
+		if(g.solveBackTrackHard2(g.courses, 0,g.solution,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
 			System.out.println("Success");
 			//g.solveHillClimb(g.rooms);
-			if(useNewMethod){
-				int iterations = (int)tryCountSpinner.getValue();
-				int[] args = new int[3];
-				args[0] = iterations;
-				args[1] = (int)switchCountSpinner.getValue();
-				args[2] = (useSwapBox.isSelected()?1:0);
-				if(iterations > 0) {
-					if(!g.secondPhase2(g.rooms,args)){
-						JOptionPane.showMessageDialog(this, "Too much iterations, but the best solution you will see ");
-					}
-				} else {
-					JOptionPane.showMessageDialog(this, "Error, not positive iteration number!");
-				}
-			} else{
-				g.bestValue = g.solveHillClimb(g.rooms);
-				g.saveSolution(g.rooms);
-			}
+				System.out.println(g.getValue(g.solution));
+				g.bestValue = g.solveHillClimb(g.solution);
+				//g.saveSolution(g.rooms);
+				System.out.println(g.printSolution(g.solution));
 			VisualFrame vf = new VisualFrame(g);
 			vf.setVisible(true);
 		}

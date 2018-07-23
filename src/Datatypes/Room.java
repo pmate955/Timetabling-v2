@@ -8,11 +8,9 @@ public class Room {
 	private int capacity;
 	private int days;
 	private int slots;
-	private List<Combo> courses;
 	
 	public Room(String name, int days, int times, int capacity){
 		this.name = name;
-		this.courses = new ArrayList<Combo>();
 		this.capacity = capacity;
 		this.days = days;
 		this.slots = times;
@@ -20,8 +18,6 @@ public class Room {
 	
 	public Room(Room r){
 		this.name = r.name;
-		this.courses = new ArrayList<Combo>();
-		this.courses.addAll(r.courses);
 		this.capacity = r.capacity;
 		this.days = r.days;
 		this.slots = r.slots;
@@ -32,76 +28,35 @@ public class Room {
 	public int getDays(){return this.days;}
 	public int getSlots(){return this.slots;}
 	
-	public Course getCourseByPos(int day, int slot){
-		TimeSlot t = new TimeSlot(day,slot);
-		for(Combo c : courses){
-			if(c.getSlotList().contains(t)) return c.getCourse();
-		}
-		return null;
-	};
-	
-	public Combo getComboByPos(int day, int slot){
-		TimeSlot t = new TimeSlot(day,slot);
-		for(Combo c : courses){
-			if(c.getSlotList().contains(t)) return c;
-		}
-		return null;
-	};
-	
-	public boolean isUsed(TimeSlot t){
-		for(Combo c : courses){
-			if(c.getSlotList().contains(t)) return true;
-		}
-		return false;
-	}
-	
-	public void addCombo(Combo c){
-		courses.add(c);
-	}
-
-	public void deleteCombo(Combo c){
-		courses.remove(c);
-	}
 	
 
-	public void clearRoom(){
-		courses.clear();
-	}
-	
-	
-	
-	
-	public List<Combo> getCourses() {
-		return courses;
-	}
-
-
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + capacity;
-	//	result = prime * result + ((courses == null) ? 0 : courses.hashCode());
 		result = prime * result + days;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + slots;
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		Room other = (Room) obj;
-		if(name.equals(other.name)) return true;
-		if (capacity != other.capacity)
+		if (getClass() != obj.getClass())
 			return false;
-		if (courses == null) {
-			if (other.courses != null)
-				return false;
-		} else if (!courses.equals(other.courses))
+		Room other = (Room) obj;
+		if (capacity != other.capacity)
 			return false;
 		if (days != other.days)
 			return false;
@@ -115,30 +70,5 @@ public class Room {
 		return true;
 	}
 
-	public String toString(){
-		String out = "Room: " + name + "\r\n";
-		out += ("=============================================================\r\n");
-		for(int slot = 0; slot < slots; slot++ ){
-			for(int day = 0; day < days; day++){
-				if(this.getCourseByPos(day, slot)==null) out += ("day: " + day + " slot: " + slot + " is empty || ");
-				else out+= ("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString() + " || ");
-			}
-			out += "\r\n";
-		}
-		out += ("=============================================================\r\n");
-		return out;
-	}
 	
-	public void print(){
-		System.out.println("Room: " + name);
-		System.out.println("=============================================================");
-		for(int slot = 0; slot < slots; slot++ ){
-			for(int day = 0; day < days; day++){
-				if(this.getCourseByPos(day, slot)==null) System.out.print("day: " + day + " slot: " + slot + " is empty || ");
-				else System.out.print("day: " + day + " slot: " + slot + " " + this.getCourseByPos(day, slot).toString() + " || ");
-			}
-			System.out.println();
-		}
-		System.out.println("=============================================================");
-	}
 }

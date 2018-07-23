@@ -7,11 +7,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import Datatypes.Course;
+import Datatypes.Combo;
+import Solver.GreedySolve;
 
 public class VisualSlot extends JPanel {
 	
-	public VisualSlot(Course c) {
+	public VisualSlot(Combo c, GreedySolve g) {
 		
 		setLayout(new BorderLayout());
 		setBorder(new LineBorder(Color.BLACK));
@@ -22,9 +23,9 @@ public class VisualSlot extends JPanel {
 			tLbl = new JLabel("No teacher");
 		} 
 		else{
-			lbl = new JLabel(c.getName());
-			tLbl = new JLabel(c.getTeacherIndex() == -1?"No teacher":c.getTeacherName());
-			if(c.getTeacherIndex() == -1) tLbl.setForeground(Color.RED);
+			lbl = new JLabel(g.courses.get(c.courseIndex).getName());
+			tLbl = new JLabel(c.teacherIndex == -1?"No teacher":g.teachers.get(c.teacherIndex).getName());
+			if(c.teacherIndex == -1) tLbl.setForeground(Color.RED);
 			else tLbl.setForeground(Color.BLUE);
 		}
 		

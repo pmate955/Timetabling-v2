@@ -41,7 +41,7 @@ public class VisualFrame extends JFrame {
 		JMenuItem save = new JMenuItem("Save txt");
 		save.addActionListener((l)->{
 			if(g!=null){
-				if(Writer.writeFile("out.txt", g.rooms, g.teachers)){
+				if(Writer.writeFile("out.txt", g)){
 					JOptionPane.showMessageDialog(this, "Saving succesful");
 				} else {
 					JOptionPane.showMessageDialog(this, "Error while saving");
@@ -60,8 +60,8 @@ public class VisualFrame extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		String[] columns = new String[g.INPUT_DAYS];
 		for(int i = 0; i < g.INPUT_DAYS; i++) columns[i]="Day " + i;
-		for(Room r : g.saved){
-			VisualRoom vr = new VisualRoom(r);
+		for(Room r : g.rooms){
+			VisualRoom vr = new VisualRoom(g,r);
 			vr.setBorder(BorderFactory.createTitledBorder("Room: " + r.getName()));
 			p.add(vr);
 		}

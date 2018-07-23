@@ -2,22 +2,17 @@ package Datatypes;
 
 public class Course {
 	private String name;
-	private Teacher T;
 	private int capacity;
 	private int slots;
 	private boolean isFixed;
 	private String topicname;
-	private int teacherIndex;
-	private String teacherName;
 	
-	public Course(String name, String topicname,  int slots, int capacity, int teacherIndex, String teacherName){
+	public Course(String name, String topicname,  int slots, int capacity){
 		this.name = name;
 		this.capacity = capacity;
 		this.slots = slots;
 		this.isFixed = false;
 		this.topicname = topicname;
-		this.teacherIndex = teacherIndex;
-		this.teacherName = teacherName;
 	}
 	
 	public Course(Course input){
@@ -26,9 +21,6 @@ public class Course {
 		this.slots = input.slots;
 		this.isFixed = input.isFixed();
 		this.topicname = input.topicname;
-		this.T = input.getT();
-		this.teacherIndex = input.teacherIndex;
-		this.teacherName = input.teacherName;
 	}
 
 	public String getTopicname() {
@@ -39,13 +31,7 @@ public class Course {
 		return slots;
 	}
 
-	public Teacher getT() {
-		return T;
-	}
 
-	public void setT(Teacher T) {
-		this.T = T;
-	}
 
 	public String getName() {
 		return name;
@@ -55,9 +41,6 @@ public class Course {
 		this.name = name;
 	}
 	
-	public String getTeacherName() {
-		return teacherName;
-	}
 
 	public int getCapacity() {
 		return capacity;
@@ -68,7 +51,7 @@ public class Course {
 	}
 
 	public String toString(){
-		return "Name: " + this.name + " Teacher: " + (teacherIndex==-1?" null ":teacherName) + " Students: " + this.capacity + " slots: " + this.slots;
+		return "Name: " + this.name + " Students: " + this.capacity + " slots: " + this.slots;
 	}
 	
 	public boolean isFixed(){
@@ -79,20 +62,14 @@ public class Course {
 		this.isFixed = true;
 	}
 	
-	public int getTeacherIndex() {
-		return teacherIndex;
-	}
-
-	public void setTeacherIndex(int teacherIndex, String teacherName) {
-		this.teacherIndex = teacherIndex;
-		this.teacherName = teacherName;
-	}
-
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((T == null) ? 0 : T.hashCode());
 		result = prime * result + capacity;
 		result = prime * result + (isFixed ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -101,6 +78,9 @@ public class Course {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -110,11 +90,6 @@ public class Course {
 		if (getClass() != obj.getClass())
 			return false;
 		Course other = (Course) obj;
-		if (T == null) {
-			if (other.T != null)
-				return false;
-		} else if (!T.equals(other.T))
-			return false;
 		if (capacity != other.capacity)
 			return false;
 		if (isFixed != other.isFixed)

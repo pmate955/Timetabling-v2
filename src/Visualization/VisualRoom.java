@@ -6,12 +6,14 @@ import java.awt.GridBagLayout;
 
 import javax.swing.JPanel;
 
+import Datatypes.Combo;
 import Datatypes.Course;
 import Datatypes.Room;
+import Solver.GreedySolve;
 
 public class VisualRoom extends JPanel{
 
-	public VisualRoom(Room r)
+	public VisualRoom(GreedySolve g, Room r)
 	{
 		GridBagLayout gl = new GridBagLayout();
 		double[] weights = new double[r.getSlots()];
@@ -31,41 +33,41 @@ public class VisualRoom extends JPanel{
 		
 		for (int i = 0; i < r.getDays(); i++) {
 			//TODO: check if slots are 0
-			Course current = r.getCourseByPos(i, 0);
+			Combo current = g.getCourseByPosRoom(g.solution, r, i, 0);
 			int startSlot = 0;
 			for (int j = 0; j < r.getSlots(); j++) {
-				if(r.getCourseByPos(i, j) == null)
+				if(g.getCourseByPosRoom(g.solution, r, i, j) == null)
 				{
-					if(current != null) addCourse(current, i, startSlot);
-					current = r.getCourseByPos(i, j);
-					addCourse(current, i, j);
+					if(current != null) addCourse(current,g, i, startSlot);
+					current = g.getCourseByPosRoom(g.solution, r, i, j);
+					addCourse(current,g, i, j);
 					startSlot = j;
 				}
-				else if(current != null && r.getCourseByPos(i, j).getName().equals(current.getName())) continue;
+				else if(current != null && g.getCourseByPosRoom(g.solution, r, i, j).courseIndex == current.courseIndex) continue;
 				else
 				{
 					//create visualslot for current
-					if(current != null) addCourse(current, i, startSlot);
+					if(current != null) addCourse(current,g, i, startSlot);
 					//init new current
-					current = r.getCourseByPos(i, j);
+					current = g.getCourseByPosRoom(g.solution, r, i, j);
 					startSlot = j;
 				}
 			}
 			//add final course
-			if(current != null) addCourse(current, i, startSlot);
+			if(current != null) addCourse(current,g, i, startSlot);
 		}
 	}
 	
-	private void addCourse(Course c, int x, int y)
+	private void addCourse(Combo c,GreedySolve g, int x, int y)
 	{
-		VisualSlot vs = new VisualSlot(c);
+		VisualSlot vs = new VisualSlot(c,g);
 		GridBagConstraints gc = new GridBagConstraints();
 		gc.weightx = 1;
 		gc.weighty = 1;
 		gc.gridx = x+1;
 		gc.gridy = y+1;
 		if(c != null){
-			gc.gridheight = c.getSlots();
+			gc.gridheight = c.getSize();
 		}
 		gc.anchor = GridBagConstraints.CENTER;
 		gc.fill = GridBagConstraints.BOTH;

@@ -11,12 +11,10 @@ import Datatypes.Teacher;
 
 public class Writer {
 	
-	public static boolean writeFile(String path, List<Room> solution, List<Teacher> te){
+	public static boolean writeFile(String path, GreedySolve g){
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
-			for(Room r : solution){
-				bw.write(r.toString());
-			}
+			bw.write(g.printSolution(g.solution));
 			bw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
