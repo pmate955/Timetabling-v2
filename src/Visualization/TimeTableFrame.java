@@ -59,8 +59,24 @@ public class TimeTableFrame extends JFrame implements Runnable{
 
 	private JMenuBar addMenu() {
 		JMenuBar bar = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
-		JMenuItem open = new JMenuItem("Open txt");
+		JMenu fileMenu = new JMenu("File");		
+		JMenuItem exit = new JMenuItem("Exit");
+		exit.addActionListener((l)->{
+			System.exit(0);
+		});
+		fileMenu.add(exit);
+		bar.add(fileMenu);
+		return bar;
+	}
+	
+	private void setContentPanel(){
+		JPanel p = new JPanel();
+		p.setLayout(new GridLayout(0,1));
+		JScrollPane scrollPane = new JScrollPane();
+		JPanel solverPanel = new JPanel();
+		solverPanel.setBorder(BorderFactory.createTitledBorder("Start solver"));
+		solverPanel.setLayout(new GridLayout(1,2));
+		JButton open = new JButton("Open txt");
 		
 		open.addActionListener((l)->{
 			JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -77,24 +93,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				nameLabel.setText(selectedFile.getAbsolutePath());
 			}
 		});
-		
-		JMenuItem exit = new JMenuItem("Exit");
-		exit.addActionListener((l)->{
-			System.exit(0);
-		});
-		fileMenu.add(open);
-		fileMenu.add(exit);
-		bar.add(fileMenu);
-		return bar;
-	}
-	
-	private void setContentPanel(){
-		JPanel p = new JPanel();
-		p.setLayout(new GridLayout(0,1));
-		JScrollPane scrollPane = new JScrollPane();
-		JPanel solverPanel = new JPanel();
-		solverPanel.setBorder(BorderFactory.createTitledBorder("Start solver"));
-		solverPanel.setLayout(new GridLayout(1,2));
+		solverPanel.add(open);
 		nameLabel = new JLabel("No file selected");
 		solverPanel.add(nameLabel);
 		JButton startButton = new JButton("Start solver");
@@ -146,7 +145,6 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
 		if(g.solveBackTrackHard2(g.courses, 0,g.solution,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
 			System.out.println("Success");
-			//g.solveHillClimb(g.rooms);
 				System.out.println(g.getValue(g.solution));
 				g.bestValue = g.solveHillClimb(g.solution);
 				//g.saveSolution(g.rooms);
@@ -159,7 +157,22 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		System.out.println("==========Optimization info============");
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
-		
+		Combo cc = null;
+		for(Combo c : g.solution){
+			if(c.getSize()==2){
+				cc = c;
+				break;
+			}
+		}
+		cc.print();
+		for(List<Combo> cs : g.getDifferentNeighbors(g.solution, cc)){
+			System.out.println("-sd-sd-sd-sd-sd-sd-sd");
+			for(Combo c : cs){
+				if(c == null){
+					System.out.println("Empty slot");
+				} else c.print();
+			}
+		};
 	}
 	
 	

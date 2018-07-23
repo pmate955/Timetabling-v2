@@ -13,9 +13,11 @@ public class Reader {
 	public List<Teacher> teachers;
 	public List<Course> courses;
 	public List<Topic> topics;
+	public List<Combo> saved;
 	public int days = 0;
 	public int slots = 0;
 	private String filename;
+	public String readed;
 	
 	public Reader(String filename){
 		this.filename = filename;
@@ -23,12 +25,15 @@ public class Reader {
 		this.teachers = new ArrayList<Teacher>();
 		this.courses = new ArrayList<Course>();
 		this.topics = new ArrayList<Topic>();
+		this.saved = new ArrayList<Combo>();
+		this.readed = "";
 	}
 	
 	public boolean readFile(){
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
 			String s = br.readLine();
+			readed += s + "\r\n";
 			while(s!=null){
 				String[] token = s.split(";");
 				if(token[0].equals("Days")) this.days = Integer.parseInt(token[1]);

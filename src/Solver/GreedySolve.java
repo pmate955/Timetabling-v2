@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.midi.Synthesizer;
+
 import Datatypes.Combo;
 import Datatypes.Course;
 import Datatypes.IndexCombo;
@@ -15,7 +17,7 @@ import Datatypes.TimeSlot;
 import Datatypes.Topic;
 
 public class GreedySolve {
-	private Reader r;
+	public Reader r;
 	public List<Room> rooms;
 	public List<Combo> solution;
 	public List<Combo> saved;
@@ -167,7 +169,6 @@ public class GreedySolve {
 		
 		int iterationNumber = 0;
 		int globalMinimum = this.getValue(nodes);
-		System.out.println("Start value: " + globalMinimum);
 		boolean foundBetter = true;
 		while(foundBetter){
 			iterationNumber++;
@@ -177,14 +178,12 @@ public class GreedySolve {
 			Combo currentNode;
 			int swapMode = 0;
 			globalMinimum = this.getValue(nodes);
-			System.out.println("New global: " + globalMinimum);
 			while(actualNodeIndex < nodes.size()){
 				currentNode = nodes.get(actualNodeIndex);
 				List<Combo> neighbors = this.getNeighbors(nodes, currentNode);
 				int startValue = this.getValue(nodes);
 				for(Combo node : neighbors){
 					int localSwapMode = 0;
-					int oldValue = this.getValue(nodes);
 					if(node.courseIndex==-1){								//Place the combo to the new place
 						this.setCourse(node, currentNode);
 						nodes.set(actualNodeIndex, node);							
@@ -206,8 +205,6 @@ public class GreedySolve {
 						this.setCourse(currentNode, node);
 					}
 					
-					int newOld = this.getValue(nodes);
-					if(oldValue != newOld) System.out.println(":( " + oldValue + " -> "+ newValue + " . " + newOld);
 					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
 						firstNodeIndex=actualNodeIndex;
 						globalMinimum = newValue;
@@ -219,9 +216,7 @@ public class GreedySolve {
 				actualNodeIndex++;
 			}
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
-				System.out.println("Global minimum: " + globalMinimum);
-				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));
-			
+				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));			
 				currentNode = nodes.get(firstNodeIndex);
 				this.setCourse(secondNode, currentNode);
 				nodes.set(firstNodeIndex, secondNode);
@@ -336,6 +331,47 @@ public class GreedySolve {
 		return output;
 	}
 
+	public List<List<Combo>> getDifferentNeighbors(List<Combo> solution, Combo input){
+		List<List<Combo>> out = new ArrayList<List<Combo>>();
+		for(Room r : rooms){
+			for(TimeSlot t : timeslots){
+				List<Combo> act = new ArrayList<Combo>();
+				boolean isOK = true;
+				for(int i = 0; i < input.getSize();){
+					if(t.getSlot()+i >= INPUT_SLOTS) {
+						isOK = false;
+						break;
+					}
+					Combo actual = this.getCourseByPosRoom(solution, r, t.getDay(), t.getSlot()+i);
+					if(actual==null){
+						if(teachers.get(input.teacherIndex).isAvailable(new TimeSlot(t.getDay(),t.getSlot()+i))){
+							act.add(new Combo(-1,"null",1,new TimeSlot(t.getDay(),t.getSlot()+i),rooms.indexOf(r),r.getName()));
+							i++;						//If the actual slot is empty, then check input teacher availability
+						} else {					//The input teacher is not available, that's problem
+							isOK = false;
+							break;
+						}
+					} else if(actual.getSize()>input.getSize()-i){
+						isOK = false;					//If the actual course is too big, break
+						break;
+					} else {							//The actual combo seems OK, check the teachers
+						if(input.teacherIndex == actual.teacherIndex || teachers.get(input.teacherIndex).isAvailable(actual.t) && teachers.get(actual.teacherIndex).isAvailable(input.t.subList(i, i+actual.getSize()))){
+							act.add(actual);
+							i+=actual.getSize();
+						} else {
+							isOK = false;
+							break;
+						}
+					}
+				}
+				if(isOK){
+					out.add(act);
+				}
+			}
+		}
+		return out;
+	}
+	
 	public List<Combo> getComboByRoom(Room r, List<Combo> solution){
 		List<Combo> output = new ArrayList<Combo>();
 		for(Combo c : solution){
@@ -466,7 +502,7 @@ public class GreedySolve {
 						}
 					}
 					if(!foundCombo) out += t.toString() + " is empty || ";
-					if(t.getDay() == 4) out += "\r\n";
+					if(t.getDay() == INPUT_DAYS-1) out += "\r\n";
 				}
 			}
 		
