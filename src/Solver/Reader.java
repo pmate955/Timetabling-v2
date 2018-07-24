@@ -57,7 +57,10 @@ public class Reader {
 	}
 	
 	private void addCombo(String[] token) {
-		this.saved.add(new Combo(Integer.parseInt(token[1]), token[2], Integer.parseInt(token[3]), new TimeSlot(Integer.parseInt(token[4]), Integer.parseInt(token[5])), Integer.parseInt(token[6]), token[7]));
+		Combo c = new Combo(Integer.parseInt(token[1]), token[2], Integer.parseInt(token[3]), new TimeSlot(Integer.parseInt(token[4]), Integer.parseInt(token[5])), Integer.parseInt(token[6]), token[7]);
+		c.teacherIndex = Integer.parseInt(token[8]);
+		this.saved.add(c);
+	
 	}
 
 	private void addRoom(String[] str){

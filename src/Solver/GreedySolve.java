@@ -68,7 +68,7 @@ public class GreedySolve {
 	public void clearData(){
 		solution.clear();
 		for(Teacher t:teachers) t.clearAvailability();
-		this.copyListC(this.courses, r.courses);
+		//this.copyListC(this.courses, r.courses);
 	}
 	
 	public void printSolution(){
@@ -152,6 +152,27 @@ public class GreedySolve {
 		return true;
 	}
 	*/
+	
+	public int solver(int max){
+		int globalMinimum = -1;
+		this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+		globalMinimum = this.getValue(solution);
+		List<Taboo> taboos = new ArrayList<Taboo>();
+		int bestIndex = 0;
+		for(int i = 0; i < max; i++){
+			int val = this.solveHillClimb(solution, taboos);
+			if(val < globalMinimum){
+				this.saveSolution(solution);
+				globalMinimum = val;
+				bestIndex = i;
+			}
+			this.clearData();
+			this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+		}
+		this.bestValue = globalMinimum;
+		return bestIndex;
+	}
+	
 	public void saveSolution(List<Combo> solution){
 		saved.clear();
 		for(Combo c : solution){
@@ -167,7 +188,7 @@ public class GreedySolve {
 		
 	}
 	
-	public int solveHillClimb(List<Combo> nodes){
+	public int solveHillClimb(List<Combo> nodes, List<Taboo> taboos){
 		
 		int iterationNumber = 0;
 		int globalMinimum = this.getValue(nodes);
@@ -207,8 +228,8 @@ public class GreedySolve {
 						nodes.set(actualNodeIndex, currentNode);
 						this.setCourse(currentNode, node);
 					}
-					
-					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
+					Taboo tb = new Taboo(localSwapMode,currentNode,node);
+					if(!taboos.contains(tb) && (newValue < startValue && newValue < globalMinimum)){			//If we found better global value
 						firstNodeIndex=actualNodeIndex;
 						globalMinimum = newValue;
 						startValue = newValue;
@@ -221,7 +242,8 @@ public class GreedySolve {
 					this.changeDifferentNeighbors(currentNode, list);
 					int newValue = this.getValue(nodes);
 					this.changeDifferentNeighbors(currentNode, list);
-					if(newValue < startValue && newValue < globalMinimum){
+					Taboo tb = new Taboo(currentNode,list);
+					if(!taboos.contains(tb) && newValue < startValue && newValue < globalMinimum){
 						firstNodeIndex=actualNodeIndex;
 						globalMinimum = newValue;
 						startValue = newValue;
@@ -235,6 +257,7 @@ public class GreedySolve {
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
 				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));			
 				currentNode = nodes.get(firstNodeIndex);
+				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 				this.setCourse(secondNode, currentNode);
 				nodes.set(firstNodeIndex, secondNode);
 				System.out.println(" to " + this.getValue(nodes));
@@ -244,6 +267,7 @@ public class GreedySolve {
 			} else if(secondNode != null && swapMode == 1){
 				System.out.println(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
+				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 				currentNode.print();
 				secondNode.print();
 				int neighborIndex = this.getIndex(nodes, secondNode);	
@@ -257,6 +281,7 @@ public class GreedySolve {
 			} else if(swapMode == 3 && differentBetterNeighbors != null){
 				System.out.println(iterationNumber + ". iteration, better Different size solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
+				taboos.add(new Taboo(currentNode, differentBetterNeighbors));
 				currentNode.print();
 				for(Combo c : differentBetterNeighbors){
 					c.print();
@@ -580,7 +605,7 @@ public class GreedySolve {
 		out += r.readed;
 		for(Combo c : saved){
 			out += "Combo;" + c.courseIndex + ";" + courses.get(c.courseIndex).getName() + ";" + c.getSize() + ";" + c.getFirstSlot().getDay() + ";" 
-					+ c.getFirstSlot().getSlot() + ";" + c.roomIndex + ";" + rooms.get(c.roomIndex).getName() + "\r\n";
+					+ c.getFirstSlot().getSlot() + ";" + c.roomIndex + ";" + rooms.get(c.roomIndex).getName() + ";" + c.teacherIndex +"\r\n";
 		}
 		out += "BestValue;" + this.bestValue + "\r\n";
 		return out;

@@ -114,8 +114,9 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
-		softPanel.setLayout(new GridLayout(3,2));
+		softPanel.setLayout(new GridLayout(1,2));
 		tryCountSpinner = new JSpinner();		
+		tryCountSpinner.setValue(1);
 		switchCountSpinner = new JSpinner();
 		JCheckBox useNewBox = new JCheckBox("Use new shotgun method");
 		useSwapBox = new JCheckBox("Swap taboo");
@@ -127,12 +128,12 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			this.useNewMethod = !this.useNewMethod;
 		});
 		
-		softPanel.add(useNewBox);
-		softPanel.add(useSwapBox);
+	//	softPanel.add(useNewBox);
+	//	softPanel.add(useSwapBox);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
-		softPanel.add(new JLabel("Courses to switch"));
-		softPanel.add(switchCountSpinner);
+	//	softPanel.add(new JLabel("Courses to switch"));
+	//	softPanel.add(switchCountSpinner);
 		p.add(softPanel);
 		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
@@ -147,6 +148,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
+		/*
 		if(g.solveBackTrackHard2(g.courses, 0,g.solution,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
 			System.out.println("Success");
 				System.out.println(g.getValue(g.solution));
@@ -155,13 +157,16 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				System.out.println(g.printSolution(g.saved));
 			VisualFrame vf = new VisualFrame(g);
 			vf.setVisible(true);
-		}
+		}*/
+		int best = g.solver((int)tryCountSpinner.getValue());
+		VisualFrame vf = new VisualFrame(g);
+		vf.setVisible(true);
 		Instant end = Instant.now();				
 		System.out.println();
 		System.out.println("==========Optimization info============");
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
-		
+		System.err.println("Best solution found at " + best + ". iteration");
 	}
 	
 	
