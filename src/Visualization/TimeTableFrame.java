@@ -91,6 +91,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 				        new SpinnerNumberModel(1,1,g.courses.size(),1);   
 				switchCountSpinner.setModel(model);
 				nameLabel.setText(selectedFile.getAbsolutePath());
+				if(g.saved.size() != 0){
+					VisualFrame vf = new VisualFrame(g);
+					vf.setVisible(true);
+				}
 			}
 		});
 		solverPanel.add(open);
@@ -147,8 +151,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			System.out.println("Success");
 				System.out.println(g.getValue(g.solution));
 				g.bestValue = g.solveHillClimb(g.solution);
-				//g.saveSolution(g.rooms);
-				System.out.println(g.printSolution(g.solution));
+				g.saveSolution(g.solution);
+				System.out.println(g.printSolution(g.saved));
 			VisualFrame vf = new VisualFrame(g);
 			vf.setVisible(true);
 		}
@@ -158,7 +162,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
 		Combo cc = null;
-		for(Combo c : g.solution){
+	/*	for(Combo c : g.solution){
 			if(c.getSize()==2){
 				cc = c;
 				break;
@@ -172,7 +176,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 					System.out.println("Empty slot");
 				} else c.print();
 			}
-		};
+		};*/
 	}
 	
 	

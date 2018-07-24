@@ -33,23 +33,23 @@ public class VisualRoom extends JPanel{
 		
 		for (int i = 0; i < r.getDays(); i++) {
 			//TODO: check if slots are 0
-			Combo current = g.getCourseByPosRoom(g.solution, r, i, 0);
+			Combo current = g.getCourseByPosRoom(g.saved, r, i, 0);
 			int startSlot = 0;
 			for (int j = 0; j < r.getSlots(); j++) {
-				if(g.getCourseByPosRoom(g.solution, r, i, j) == null)
+				if(g.getCourseByPosRoom(g.saved, r, i, j) == null)
 				{
 					if(current != null) addCourse(current,g, i, startSlot);
-					current = g.getCourseByPosRoom(g.solution, r, i, j);
+					current = g.getCourseByPosRoom(g.saved, r, i, j);
 					addCourse(current,g, i, j);
 					startSlot = j;
 				}
-				else if(current != null && g.getCourseByPosRoom(g.solution, r, i, j).courseIndex == current.courseIndex) continue;
+				else if(current != null && g.getCourseByPosRoom(g.saved, r, i, j).courseIndex == current.courseIndex) continue;
 				else
 				{
 					//create visualslot for current
 					if(current != null) addCourse(current,g, i, startSlot);
 					//init new current
-					current = g.getCourseByPosRoom(g.solution, r, i, j);
+					current = g.getCourseByPosRoom(g.saved, r, i, j);
 					startSlot = j;
 				}
 			}

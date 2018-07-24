@@ -36,6 +36,7 @@ public class GreedySolve {
 		r.readFile();
 		this.INPUT_DAYS = r.days;
 		this.INPUT_SLOTS = r.slots;
+		this.bestValue = r.bestValue;
 		this.rooms = new ArrayList<Room>();
 		this.saved = new ArrayList<Combo>();
 		this.solution = new ArrayList<Combo>();
@@ -46,6 +47,7 @@ public class GreedySolve {
 		this.copyListT(this.teachers, r.teachers);
 		this.copyListC(this.courses, r.courses);
 		this.copyListTp(this.topics, r.topics);
+		this.copyListSaved(this.saved, r.saved);
 		this.courseTeacher = new HashMap<String,List<Integer>>();
 		for(Topic to:topics){
 			List<Integer> tIndexes = new ArrayList<Integer>();
@@ -473,6 +475,12 @@ public class GreedySolve {
 		}
 	}
 	
+	private void copyListSaved(List<Combo> dest, List<Combo> src){
+		for(int i = 0; i < src.size();i++){
+			dest.add(src.get(i));
+		}
+	}
+	
 	public Combo getCourseByPosRoom(List<Combo> sol, Room r, int day, int slot){
 		for(Combo c : sol){
 			if(c.roomIndex == rooms.indexOf(r) && c.t.contains(new TimeSlot(day,slot))){
@@ -508,6 +516,17 @@ public class GreedySolve {
 		
 			out += "=============================================================\r\n";
 		}
+		return out;
+	}
+	
+	public String save(){
+		String out = "";
+		out += r.readed;
+		for(Combo c : saved){
+			out += "Combo;" + c.courseIndex + ";" + courses.get(c.courseIndex).getName() + ";" + c.getSize() + ";" + c.getFirstSlot().getDay() + ";" 
+					+ c.getFirstSlot().getSlot() + ";" + c.roomIndex + ";" + rooms.get(c.roomIndex).getName() + "\r\n";
+		}
+		out += "BestValue;" + this.bestValue + "\r\n";
 		return out;
 	}
 }

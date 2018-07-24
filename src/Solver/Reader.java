@@ -16,6 +16,7 @@ public class Reader {
 	public List<Combo> saved;
 	public int days = 0;
 	public int slots = 0;
+	public int bestValue;
 	private String filename;
 	public String readed;
 	
@@ -32,10 +33,10 @@ public class Reader {
 	public boolean readFile(){
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
-			String s = br.readLine();
-			readed += s + "\r\n";
-			while(s!=null){
+			String s = br.readLine();			
+			while(s!=null){				
 				String[] token = s.split(";");
+				if(!token[0].equals("Combo"))  readed += s + "\r\n";
 				if(token[0].equals("Days")) this.days = Integer.parseInt(token[1]);
 				else if(token[0].equals("Slots")) this.slots = Integer.parseInt(token[1]);
 				else if(token[0].equals("Room")) this.addRoom(token);
@@ -43,6 +44,8 @@ public class Reader {
 				else if(token[0].equals("Topic")) this.addTopic(token);
 				else if(token[0].equals("Course")) this.addCourse(token);
 				else if(token[0].equals("Speciality")) this.addSpeciality(token);
+				else if(token[0].equals("Combo")) this.addCombo(token);
+				else if(token[0].equals("BestValue")) this.bestValue = Integer.parseInt(token[1]);
 				s = br.readLine();
 			}
 			br.close();
@@ -53,6 +56,10 @@ public class Reader {
 		return true;
 	}
 	
+	private void addCombo(String[] token) {
+		this.saved.add(new Combo(Integer.parseInt(token[1]), token[2], Integer.parseInt(token[3]), new TimeSlot(Integer.parseInt(token[4]), Integer.parseInt(token[5])), Integer.parseInt(token[6]), token[7]));
+	}
+
 	private void addRoom(String[] str){
 		String name = str[1];
 		int capacity = Integer.parseInt(str[2]);
