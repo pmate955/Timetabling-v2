@@ -18,6 +18,7 @@ import Datatypes.Topic;
 
 public class GreedySolve {
 	public Reader r;
+	public int[] penalties;					//0 - runCount, 1 - fridayPenalty, 2 - differentRoomPenalty, 3 - 1- check compactness
 	public List<Room> rooms;
 	public List<Combo> solution;
 	public List<Combo> saved;
@@ -37,6 +38,7 @@ public class GreedySolve {
 		this.INPUT_DAYS = r.days;
 		this.INPUT_SLOTS = r.slots;
 		this.bestValue = r.bestValue;
+		this.penalties = new int[4];
 		this.rooms = new ArrayList<Room>();
 		this.saved = new ArrayList<Combo>();
 		this.solution = new ArrayList<Combo>();
@@ -68,7 +70,6 @@ public class GreedySolve {
 	public void clearData(){
 		solution.clear();
 		for(Teacher t:teachers) t.clearAvailability();
-		//this.copyListC(this.courses, r.courses);
 	}
 	
 	public void printSolution(){
@@ -117,49 +118,18 @@ public class GreedySolve {
 		newNode.slotIndex++;
 		return solveBackTrackHard2(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
 	}
+
 	
-	
-	/*
-	public boolean secondPhase2(List<Room> solution, int[] inputArgs){
-		List<Combo> tabo = new ArrayList<Combo>();
-		List<Combo> nodes = this.getNodes(solution);
-		int startValue = this.getValue(nodes);
-		int counter = 0;
-		for(int i = 0; i < inputArgs[0]; i++){
-			if(inputArgs[2]!=1){
-				tabo.addAll(nodes.subList(0, inputArgs[1]));
-			} else {
-				if(counter+inputArgs[1]>=nodes.size()) counter = 0;
-				tabo.addAll(nodes.subList(counter, counter+inputArgs[1]));
-				counter++;
-			}
-			
-			int endValue = this.solveHillClimb(solution);
-			if(endValue<startValue){
-				System.out.println("-SAVE--------------------SAVE-------------");
-				saveSolution(solution);
-				startValue = endValue;
-				bestValue = endValue;
-			} 
-			if(i==inputArgs[0]-1) break;
-			this.clearData();
-			if(!this.solveBackTrackHard2(this.courses, 0, this.solution, tabo, new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
-				System.out.println("Not find solution :(");
-				return false;
-			};
-			nodes = this.getNodes(solution);
+	public int solver(int[] args){
+		for(int i = 0; i < 4; i++){
+			this.penalties[i] = args[i];
 		}
-		return true;
-	}
-	*/
-	
-	public int solver(int max){
 		int globalMinimum = -1;
 		this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();
 		int bestIndex = 0;
-		for(int i = 0; i < max; i++){
+		for(int i = 0; i < penalties[0]; i++){
 			int val = this.solveHillClimb(solution, taboos);
 			if(val < globalMinimum){
 				this.saveSolution(solution);
@@ -313,7 +283,7 @@ public class GreedySolve {
 		int value = 0;
 		int[] coursesByRoom = new int[rooms.size()];
 		for(Combo combo : input){
-			if(combo.getFirstSlot().getDay()==4) value+=4;			//Friday constraint penalyties
+			if(combo.getFirstSlot().getDay()==4) value+=penalties[1];			//Friday constraint penalties
 			coursesByRoom[combo.roomIndex]+= combo.getSize();
 			//if(combo.getFirstSlot().getDay()==4) value-=4;
 			//if(combo.getFirstSlot().getSlot() == 0) value-=1;
@@ -328,7 +298,7 @@ public class GreedySolve {
 		value += (max1-min1);
 		for(Teacher te : teachers){														//TEacher compactness
 			for(int day = 0; day < INPUT_DAYS; day++){
-				
+				value += this.getPenaltyByTeacherDay(input, te, day);
 				int min = 10;
 				int max = -1;
 				List<TimeSlot> in = te.getAvailabilityAtDay(day);				
@@ -338,7 +308,7 @@ public class GreedySolve {
 					if(ts.getSlot() > max) max = ts.getSlot();
 				}
 				if(min == max){
-					value += max;
+					if(penalties[3]==1) value += max;
 					continue;
 				}
 				for(int slot = 0; slot < max; slot++){
@@ -349,6 +319,22 @@ public class GreedySolve {
 			}
 		}
 		return value;
+	}
+	
+	private int getPenaltyByTeacherDay(List<Combo> input, Teacher te, int day){
+		int output = 0;
+		int teacherIndex = teachers.indexOf(te);
+		Combo last = null;
+		for(Combo c : input){
+			if(c.teacherIndex == teacherIndex && c.getFirstSlot().getDay() == day){
+				if(last == null) last = c;
+				else if(last.roomIndex != c.roomIndex){
+					output += penalties[2];
+					last = c;
+				}
+			}
+		}
+		return output;
 	}
 	
 	public void changeDifferentNeighbors(Combo bigger, List<Combo> neighbor){

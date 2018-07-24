@@ -35,10 +35,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JPanel contentPane;
 	private File selectedFile;
 	private GreedySolve g;
-	private boolean useNewMethod;
 	private JSpinner tryCountSpinner;
-	private JSpinner switchCountSpinner;
-	private JCheckBox useSwapBox;
+	private JSpinner fridayPenalty;
+	private JSpinner differentRoomPenalty;
+	private JCheckBox checkCompactness;
 	private JLabel nameLabel;
 	
 	public TimeTableFrame(){
@@ -48,9 +48,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		contentPane = new JPanel();
 		setJMenuBar(addMenu());
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-		
 		setContentPane(contentPane);
-		this.useNewMethod = true;
 		this.setContentPanel();
 		this.pack();
 		setVisible(true);
@@ -87,9 +85,6 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
 				selectedFile = jfc.getSelectedFile();
 				g = new GreedySolve(selectedFile.getAbsolutePath());
-				SpinnerModel model =
-				        new SpinnerNumberModel(1,1,g.courses.size(),1);   
-				switchCountSpinner.setModel(model);
 				nameLabel.setText(selectedFile.getAbsolutePath());
 				if(g.saved.size() != 0){
 					VisualFrame vf = new VisualFrame(g);
@@ -114,26 +109,22 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
-		softPanel.setLayout(new GridLayout(1,2));
+		softPanel.setLayout(new GridLayout(4,2));
 		tryCountSpinner = new JSpinner();		
-		tryCountSpinner.setValue(1);
-		switchCountSpinner = new JSpinner();
-		JCheckBox useNewBox = new JCheckBox("Use new shotgun method");
-		useSwapBox = new JCheckBox("Swap taboo");
-		useNewBox.setSelected(true);
-		useNewBox.addActionListener((l)->{
-			useSwapBox.setEnabled(!this.useNewMethod);
-			tryCountSpinner.setEnabled(!this.useNewMethod);
-			switchCountSpinner.setEnabled(!this.useNewMethod);
-			this.useNewMethod = !this.useNewMethod;
-		});
-		
-	//	softPanel.add(useNewBox);
-	//	softPanel.add(useSwapBox);
+		tryCountSpinner.setValue(1);		
+		fridayPenalty = new JSpinner();
+		fridayPenalty.setValue(4);
+		differentRoomPenalty = new JSpinner();
+		differentRoomPenalty.setValue(0);
+		checkCompactness = new JCheckBox("Check teacher compactness");
+		checkCompactness.setSelected(true);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
-	//	softPanel.add(new JLabel("Courses to switch"));
-	//	softPanel.add(switchCountSpinner);
+		softPanel.add(new JLabel("Friday penalty"));
+		softPanel.add(fridayPenalty);
+		softPanel.add(new JLabel("Different room penalty"));
+		softPanel.add(differentRoomPenalty);
+		softPanel.add(checkCompactness);
 		p.add(softPanel);
 		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
@@ -148,17 +139,12 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
 		List<IndexCombo> bad = new ArrayList<IndexCombo>();
-		/*
-		if(g.solveBackTrackHard2(g.courses, 0,g.solution,new ArrayList<Combo>(), bad, g.teachers, new IndexCombo(0,0,0))){
-			System.out.println("Success");
-				System.out.println(g.getValue(g.solution));
-				g.bestValue = g.solveHillClimb(g.solution);
-				g.saveSolution(g.solution);
-				System.out.println(g.printSolution(g.saved));
-			VisualFrame vf = new VisualFrame(g);
-			vf.setVisible(true);
-		}*/
-		int best = g.solver((int)tryCountSpinner.getValue());
+		int[] args = new int[4];
+		args[0] = (int)tryCountSpinner.getValue();
+		args[1] = (int)fridayPenalty.getValue();
+		args[2] = (int)differentRoomPenalty.getValue();
+		args[3] = (checkCompactness.isSelected()?1:0);
+		int best = g.solver(args);
 		VisualFrame vf = new VisualFrame(g);
 		vf.setVisible(true);
 		Instant end = Instant.now();				
