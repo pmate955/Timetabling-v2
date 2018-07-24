@@ -329,16 +329,20 @@ public class GreedySolve {
 	public void changeDifferentNeighbors(Combo bigger, List<Combo> neighbor){
 		List<TimeSlot> oldBigger = bigger.getSlotList();
 		List<TimeSlot> newBigger = new ArrayList<TimeSlot>();	
+		teachers.get(bigger.teacherIndex).deleteUnavailablePeriod(bigger.t);
 		for(int i = 0; i < neighbor.size(); i++){
 			Combo actual = neighbor.get(i);
 			int actSize = actual.getSize();
 			newBigger.addAll(actual.getSlotList());
+			if(actual.courseIndex >= 0) teachers.get(actual.teacherIndex).deleteUnavailablePeriod(actual.t);
 			actual.t = new ArrayList<TimeSlot>();
 			List<TimeSlot> sub = oldBigger.subList(0, actSize);
-			neighbor.get(i).t.addAll(sub);
+			actual.t.addAll(sub);
+			if(actual.courseIndex >= 0) teachers.get(actual.teacherIndex).addUnavailablePeriod(actual.t);
 			oldBigger.removeAll(sub);
 		}
 		bigger.setList(newBigger);
+		teachers.get(bigger.teacherIndex).addUnavailablePeriod(bigger.t);
 		int biggerRoom = bigger.roomIndex;
 		bigger.roomIndex = neighbor.get(0).roomIndex;
 		for(Combo c : neighbor){
@@ -382,6 +386,7 @@ public class GreedySolve {
 
 	public List<List<Combo>> getDifferentNeighbors(List<Combo> solution, Combo input){
 		List<List<Combo>> out = new ArrayList<List<Combo>>();
+		if(input.getSize() == 1) return out;
 		for(Room r : rooms){
 			for(TimeSlot t : timeslots){
 				List<Combo> act = new ArrayList<Combo>();
@@ -392,7 +397,7 @@ public class GreedySolve {
 						break;
 					}
 					Combo actual = this.getCourseByPosRoom(solution, r, t.getDay(), t.getSlot()+i);
-					if(i==0 && actual != null && actual.getSize() == input.getSize()){
+					if(actual != null && actual.getSize() == input.getSize()){
 						isOK = false;
 						break;
 					}
