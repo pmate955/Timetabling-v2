@@ -63,7 +63,7 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		this.t.clear();
 		this.t.addAll(t);
 	}
-
+	
 	public boolean contains(List<TimeSlot> input){
 		return !Collections.disjoint(t, input);
 	}

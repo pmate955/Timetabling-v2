@@ -178,6 +178,7 @@ public class GreedySolve {
 			int firstNodeIndex = -1;
 			Combo secondNode = null;
 			Combo currentNode;
+			List<Combo> differentBetterNeighbors = null;
 			int swapMode = 0;
 			globalMinimum = this.getValue(nodes);
 			while(actualNodeIndex < nodes.size()){
@@ -215,6 +216,20 @@ public class GreedySolve {
 						swapMode = localSwapMode;
 					}
 				}
+				List<List<Combo>> diffNeighbors = this.getDifferentNeighbors(nodes, currentNode);
+				for(List<Combo> list: diffNeighbors){
+					this.changeDifferentNeighbors(currentNode, list);
+					int newValue = this.getValue(nodes);
+					this.changeDifferentNeighbors(currentNode, list);
+					if(newValue < startValue && newValue < globalMinimum){
+						firstNodeIndex=actualNodeIndex;
+						globalMinimum = newValue;
+						startValue = newValue;
+						differentBetterNeighbors = list;
+						swapMode = 3;
+					}
+				}
+				
 				actualNodeIndex++;
 			}
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
@@ -227,7 +242,7 @@ public class GreedySolve {
 				secondNode.print();
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
-				System.out.print(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
+				System.out.println(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
 				currentNode.print();
 				secondNode.print();
@@ -239,7 +254,21 @@ public class GreedySolve {
 				nodes.get(neighborIndex).print();
 				System.out.println(" to " + this.getValue(nodes) + " " + globalMinimum);
 				foundBetter = true;
-			} else {
+			} else if(swapMode == 3 && differentBetterNeighbors != null){
+				System.out.println(iterationNumber + ". iteration, better Different size solution: " + this.getValue(nodes));
+				currentNode = nodes.get(firstNodeIndex);
+				currentNode.print();
+				for(Combo c : differentBetterNeighbors){
+					c.print();
+				}
+				this.changeDifferentNeighbors(currentNode, differentBetterNeighbors);
+				currentNode.print();
+				for(Combo c : differentBetterNeighbors){
+					c.print();
+				}
+				System.out.println(" TO " + this.getValue(nodes));
+				foundBetter = true;
+			}else {
 				foundBetter = false;
 			}
 		}
@@ -297,7 +326,25 @@ public class GreedySolve {
 		return value;
 	}
 	
-	
+	public void changeDifferentNeighbors(Combo bigger, List<Combo> neighbor){
+		List<TimeSlot> oldBigger = bigger.getSlotList();
+		List<TimeSlot> newBigger = new ArrayList<TimeSlot>();	
+		for(int i = 0; i < neighbor.size(); i++){
+			Combo actual = neighbor.get(i);
+			int actSize = actual.getSize();
+			newBigger.addAll(actual.getSlotList());
+			actual.t = new ArrayList<TimeSlot>();
+			List<TimeSlot> sub = oldBigger.subList(0, actSize);
+			neighbor.get(i).t.addAll(sub);
+			oldBigger.removeAll(sub);
+		}
+		bigger.setList(newBigger);
+		int biggerRoom = bigger.roomIndex;
+		bigger.roomIndex = neighbor.get(0).roomIndex;
+		for(Combo c : neighbor){
+			c.roomIndex = biggerRoom;
+		}
+	}
 	
 	
 	public List<Combo> getNeighbors(List<Combo> solution, Combo input){
@@ -345,6 +392,10 @@ public class GreedySolve {
 						break;
 					}
 					Combo actual = this.getCourseByPosRoom(solution, r, t.getDay(), t.getSlot()+i);
+					if(i==0 && actual != null && actual.getSize() == input.getSize()){
+						isOK = false;
+						break;
+					}
 					if(actual==null){
 						if(teachers.get(input.teacherIndex).isAvailable(new TimeSlot(t.getDay(),t.getSlot()+i))){
 							act.add(new Combo(-1,"null",1,new TimeSlot(t.getDay(),t.getSlot()+i),rooms.indexOf(r),r.getName()));

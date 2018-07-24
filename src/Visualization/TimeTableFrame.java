@@ -161,22 +161,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		System.out.println("==========Optimization info============");
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
-		Combo cc = null;
-	/*	for(Combo c : g.solution){
-			if(c.getSize()==2){
-				cc = c;
-				break;
-			}
-		}
-		cc.print();
-		for(List<Combo> cs : g.getDifferentNeighbors(g.solution, cc)){
-			System.out.println("-sd-sd-sd-sd-sd-sd-sd");
-			for(Combo c : cs){
-				if(c == null){
-					System.out.println("Empty slot");
-				} else c.print();
-			}
-		};*/
+		
 	}
 	
 	
