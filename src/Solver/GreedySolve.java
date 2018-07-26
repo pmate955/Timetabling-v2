@@ -17,9 +17,11 @@ import Datatypes.Teacher;
 import Datatypes.TimeSlot;
 import Datatypes.Topic;
 
-public class GreedySolve {
+public class GreedySolve implements Runnable{
 	public Reader r;
 	public int[] penalties;					//0 - runCount, 1 - fridayPenalty, 2 - differentRoomPenalty, 3 - 1- check compactness
+	public int[] args;
+	public int bestIteration;
 	public boolean isDebug;
 	public List<Integer> courseIndexes;
 	public List<Room> rooms;
@@ -30,6 +32,7 @@ public class GreedySolve {
 	public List<Topic> topics;
 	public List<TimeSlot> timeslots;
 	public Map<String,List<Integer>> courseTeacher;
+	public Thread thread;
 	public int INPUT_DAYS;
 	public int INPUT_SLOTS;
 	public int runCount = 0;
@@ -42,6 +45,7 @@ public class GreedySolve {
 		this.INPUT_SLOTS = r.slots;
 		this.bestValue = r.bestValue;
 		this.penalties = new int[4];
+		this.args = new int[7];
 		this.isDebug = false;
 		this.courseIndexes = new ArrayList<Integer>();
 		this.rooms = new ArrayList<Room>();
@@ -87,7 +91,7 @@ public class GreedySolve {
 	}
 	
 	
-	public boolean solveBackTrackHard2(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
+	public boolean fasterFirstPhase(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
 		runCount++;
 		if(courseIndex >= cs.size()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(courseIndexes.get(courseIndex));									//Else we get the first unfixed course, and trying to fix
@@ -111,7 +115,7 @@ public class GreedySolve {
 		Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
 		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
 			newNode.slotIndex++;
-			return solveBackTrackHard2(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
+			return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
 		}
 		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(newNode.teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
@@ -119,12 +123,74 @@ public class GreedySolve {
 			solved.add(combo);
 			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(newNode.slotIndex+i, newNode.roomIndex,newNode.teacherIndex));			
 			
-			return solveBackTrackHard2(cs,++courseIndex,solved,notAllowed,used,teachers,new IndexCombo(0,0,0));		//We going down the tree with the next course
+			return fasterFirstPhase(cs,++courseIndex,solved,notAllowed,used,teachers,new IndexCombo(0,0,0));		//We going down the tree with the next course
 		}
 		newNode.slotIndex++;
-		return solveBackTrackHard2(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
+		return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 
+	public boolean backtrackFirstPhase(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
+		runCount++;
+		if(isDebug) System.out.println(runCount);
+		if(courseIndex >= cs.size()) return true;	
+		else {
+			Course c = cs.get(courseIndexes.get(courseIndex));									//Else we get the first unfixed course, and trying to fix
+			List<Integer> teacherIndexes = this.getTeacherByCourse(c.getTopicname());
+			while(hasNext(newNode, used, teacherIndexes.size())){
+				TimeSlot t = timeslots.get(newNode.slotIndex);				//We get the time slot
+				Room r = rooms.get(newNode.roomIndex);							//and the room
+				Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
+				Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
+				if(isValid(combo, solved, t,c,r,teacher)){
+					List<IndexCombo> added = new ArrayList<IndexCombo>();
+					teachers.get(teacherIndexes.get(newNode.teacherIndex)).addUnavailablePeriod(t, c.getSlots());
+					combo.teacherIndex = teacherIndexes.get(newNode.teacherIndex);
+					solved.add(combo);
+					for(int i = 0; i < c.getSlots();i++){
+						IndexCombo act = new IndexCombo(newNode.slotIndex+i, newNode.roomIndex,newNode.teacherIndex); 
+						used.add(act);
+						added.add(act);
+					}
+					if(backtrackFirstPhase(cs, ++courseIndex, solved, notAllowed, used, teachers, new IndexCombo(0,0,0))){						
+						return true;
+					} 
+					--courseIndex;
+					teachers.get(teacherIndexes.get(newNode.teacherIndex)).deleteUnavailablePeriod(t, c.getSlots());
+					solved.remove(combo);
+					used.removeAll(added);
+				} else {
+					
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isValid(Combo combo, List<Combo> solved, TimeSlot t, Course c, Room r, Teacher teacher){
+		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
+			return false;	
+		}
+		if(!teacher.isAvailable(combo.getSlotList())){
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean hasNext(IndexCombo newNode, List<IndexCombo> used, int teacherSize){
+		do{
+			newNode.slotIndex++;
+			if(newNode.slotIndex >= timeslots.size()){
+				newNode.slotIndex=0;
+				newNode.roomIndex++;
+			}
+			if(newNode.roomIndex >= rooms.size()){
+				newNode.roomIndex = 0;										//If there is no more room/time, next teacher
+				newNode.teacherIndex++;
+			}
+			if(newNode.teacherIndex>=teacherSize) return false;		//If there are no more teacher, return false
+		}while(used.contains(newNode));
+		return true;
+	}
 	
 	public void generateNormal(){
 		this.courseIndexes.clear();
@@ -153,14 +219,14 @@ public class GreedySolve {
 	
 
 	
-	public int solver(int[] args){
+	public int solver(){
 		for(int i = 0; i < 4; i++){
 			this.penalties[i] = args[i];
 		}
 		this.isDebug = (args[5]==1);
 		int globalMinimum = -1;
 		this.generateNormal();
-		this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+		this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
 		
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();
@@ -186,12 +252,16 @@ public class GreedySolve {
 			if(args[4] == 1){
 				this.generateRandom();
 			}
-			while(!this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
-				System.out.println("Regen");
-				if(args[4] == 1){
-					this.generateRandom();
+			if(args[6]==1){
+				this.backtrackFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+			} else {
+				while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+					System.out.println("Regen");
+					if(args[4] == 1){
+						this.generateRandom();
+					}
+					this.clearData();
 				}
-				this.clearData();
 			}
 		}
 		this.bestValue = globalMinimum;
@@ -211,12 +281,25 @@ public class GreedySolve {
 			if(!this.isValidList())  {
 				System.out.println("Error with list");
 			}
-			if(!this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+			if(!this.backtrackFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
 				for(int j = 0; j < courses.size();j++) System.out.print(courseIndexes.get(j) + " ");
 				System.out.println("");
 				this.clearData();
-				this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+				this.backtrackFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
 				break;
+			} else {
+				System.out.println("Win" + this.solution.size());
+				for(Course c : courses){
+					boolean found = false;
+					for(Combo com : solution){
+						if(courses.get(com.courseIndex).equals(c)){
+							found = true;
+							break;
+						}
+					}
+					if(!found) System.out.println("Error, not found " + c.toString());
+				}
+				
 			}
 			this.clearData();
 		}
@@ -357,9 +440,6 @@ public class GreedySolve {
 		for(Combo combo : input){
 			if(combo.getFirstSlot().getDay()==4) value+=penalties[1];			//Friday constraint penalties
 			coursesByRoom[combo.roomIndex]+= combo.getSize();
-			//if(combo.getFirstSlot().getDay()==4) value-=4;
-			//if(combo.getFirstSlot().getSlot() == 0) value-=1;
-			//if(combo.getFirstSlot().getSlot()+combo.getSize()-1 >= 1 && combo.getFirstSlot().getSlot() <= 1) value+=40;
 		}
 		int max1 = coursesByRoom[0];
 		int min1 = coursesByRoom[0];
@@ -532,12 +612,6 @@ public class GreedySolve {
 	
 	public boolean erroneus(List<Combo> solution, Combo c){
 		Room r = rooms.get(c.roomIndex);
-	/*	for(Room rm : rooms){
-			if(rm.getName().equals(c.getR().getName())){
-				r = rm;
-				break;
-			}
-		}*/
 		if(r!=null){
 			for(TimeSlot t : c.getSlotList()){
 				if(t.getSlot()>=INPUT_SLOTS) return true;
@@ -667,5 +741,16 @@ public class GreedySolve {
 		}
 		out += "BestValue;" + this.bestValue + "\r\n";
 		return out;
+	}
+	
+	public void setArgs(int[] in){
+		for(int i = 0; i < args.length; i++){
+			this.args[i] = in[i];
+		}
+	}
+
+	@Override
+	public void run() {
+		this.bestIteration = this.solver();		
 	}
 }

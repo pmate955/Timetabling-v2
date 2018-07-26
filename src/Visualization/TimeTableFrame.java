@@ -39,6 +39,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JCheckBox checkCompactness;
 	private JCheckBox useRandom;
 	private JCheckBox useDebugMode;
+	private JCheckBox useSlower;
+	private JLabel counter;
 	private JLabel nameLabel;
 	
 	public TimeTableFrame(){
@@ -73,7 +75,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		JScrollPane scrollPane = new JScrollPane();
 		JPanel solverPanel = new JPanel();
 		solverPanel.setBorder(BorderFactory.createTitledBorder("Start solver"));
-		solverPanel.setLayout(new GridLayout(1,2));
+		solverPanel.setLayout(new GridLayout(1,3));
 		JButton open = new JButton("Open txt");
 		
 		open.addActionListener((l)->{
@@ -105,14 +107,18 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			}
 		});
 		solverPanel.add(startButton);
+		counter = new JLabel("Not running yet");
+		solverPanel.add(counter);
 		contentPane.add(solverPanel);
 		
 		JPanel hardPanel = new JPanel();
 		hardPanel.setLayout(new BorderLayout());
 		hardPanel.setBorder(BorderFactory.createTitledBorder("Hard constraint solver settings"));
 		useRandom = new JCheckBox("Use shotgun method");
-		hardPanel.add(useRandom);
-		contentPane.add(hardPanel);
+		hardPanel.add(useRandom, BorderLayout.EAST);
+		useSlower = new JCheckBox("Use slower backtrack");
+		hardPanel.add(useSlower);
+		contentPane.add(hardPanel, BorderLayout.CENTER);
 		
 		
 		JPanel softPanel = new JPanel();
@@ -149,14 +155,27 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	public void run() {
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
-		int[] args = new int[6];
+		int[] args = new int[7];
 		args[0] = (int)tryCountSpinner.getValue();
 		args[1] = (int)fridayPenalty.getValue();
 		args[2] = (int)differentRoomPenalty.getValue();
 		args[3] = (checkCompactness.isSelected()?1:0);
 		args[4] = (useRandom.isSelected()?1:0);
 		args[5] = (useDebugMode.isSelected()?1:0);
-		int best = g.solver(args);
+		args[6] = (useSlower.isSelected()?1:0);
+		g.setArgs(args);
+		Thread tr = new Thread(g);
+		tr.start();
+		while(tr.isAlive()){
+			counter.setText("Running: " + g.runCount);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		this.counter.setText("Finished: " + g.runCount);
 		//g.testPhase();
 		VisualFrame vf = new VisualFrame(g);
 		vf.setVisible(true);
@@ -165,7 +184,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		System.out.println("==========Optimization info============");
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
-		System.err.println("Best solution found at " + best + ". iteration " + g.bestValue);
+		System.err.println("Best solution found at " + g.bestIteration +". iteration " + g.bestValue);
 	}
 	
 	
