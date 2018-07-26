@@ -1,5 +1,6 @@
 package Visualization;
 
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.io.File;
 import java.time.Duration;
@@ -21,12 +22,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 
-import Datatypes.Combo;
 import Datatypes.IndexCombo;
 import Solver.GreedySolve;
 
@@ -39,6 +37,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JSpinner fridayPenalty;
 	private JSpinner differentRoomPenalty;
 	private JCheckBox checkCompactness;
+	private JCheckBox useRandom;
+	private JCheckBox useDebugMode;
 	private JLabel nameLabel;
 	
 	public TimeTableFrame(){
@@ -107,6 +107,14 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		solverPanel.add(startButton);
 		contentPane.add(solverPanel);
 		
+		JPanel hardPanel = new JPanel();
+		hardPanel.setLayout(new BorderLayout());
+		hardPanel.setBorder(BorderFactory.createTitledBorder("Hard constraint solver settings"));
+		useRandom = new JCheckBox("Use shotgun method");
+		hardPanel.add(useRandom);
+		contentPane.add(hardPanel);
+		
+		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
 		softPanel.setLayout(new GridLayout(4,2));
@@ -118,6 +126,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		differentRoomPenalty.setValue(0);
 		checkCompactness = new JCheckBox("Check teacher compactness");
 		checkCompactness.setSelected(true);
+		useDebugMode = new JCheckBox("Debug mode");
+		useDebugMode.setSelected(false);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
 		softPanel.add(new JLabel("Friday penalty"));
@@ -125,6 +135,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		softPanel.add(new JLabel("Different room penalty"));
 		softPanel.add(differentRoomPenalty);
 		softPanel.add(checkCompactness);
+		softPanel.add(useDebugMode);
 		p.add(softPanel);
 		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
@@ -138,13 +149,15 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	public void run() {
 		g = new GreedySolve(selectedFile.getAbsolutePath());		
 		Instant start = Instant.now();
-		List<IndexCombo> bad = new ArrayList<IndexCombo>();
-		int[] args = new int[4];
+		int[] args = new int[6];
 		args[0] = (int)tryCountSpinner.getValue();
 		args[1] = (int)fridayPenalty.getValue();
 		args[2] = (int)differentRoomPenalty.getValue();
 		args[3] = (checkCompactness.isSelected()?1:0);
+		args[4] = (useRandom.isSelected()?1:0);
+		args[5] = (useDebugMode.isSelected()?1:0);
 		int best = g.solver(args);
+		//g.testPhase();
 		VisualFrame vf = new VisualFrame(g);
 		vf.setVisible(true);
 		Instant end = Instant.now();				
@@ -152,7 +165,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		System.out.println("==========Optimization info============");
 		System.out.println(g.runCount + " times started the first phase");
 		System.out.println("Time needed: " + Duration.between(start, end)); 
-		System.err.println("Best solution found at " + best + ". iteration");
+		System.err.println("Best solution found at " + best + ". iteration " + g.bestValue);
 	}
 	
 	

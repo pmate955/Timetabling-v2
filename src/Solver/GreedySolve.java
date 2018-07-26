@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.sound.midi.Synthesizer;
 
@@ -19,6 +20,8 @@ import Datatypes.Topic;
 public class GreedySolve {
 	public Reader r;
 	public int[] penalties;					//0 - runCount, 1 - fridayPenalty, 2 - differentRoomPenalty, 3 - 1- check compactness
+	public boolean isDebug;
+	public List<Integer> courseIndexes;
 	public List<Room> rooms;
 	public List<Combo> solution;
 	public List<Combo> saved;
@@ -39,6 +42,8 @@ public class GreedySolve {
 		this.INPUT_SLOTS = r.slots;
 		this.bestValue = r.bestValue;
 		this.penalties = new int[4];
+		this.isDebug = false;
+		this.courseIndexes = new ArrayList<Integer>();
 		this.rooms = new ArrayList<Room>();
 		this.saved = new ArrayList<Combo>();
 		this.solution = new ArrayList<Combo>();
@@ -81,10 +86,11 @@ public class GreedySolve {
 		for(Teacher t : teachers) t.print();
 	}
 	
+	
 	public boolean solveBackTrackHard2(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
 		runCount++;
 		if(courseIndex >= cs.size()) return true;							//If there's no more unfixed course, end of the recursion
-		Course c = cs.get(courseIndex);									//Else we get the first unfixed course, and trying to fix
+		Course c = cs.get(courseIndexes.get(courseIndex));									//Else we get the first unfixed course, and trying to fix
 		List<Integer> teacherIndexes = this.getTeacherByCourse(c.getTopicname());
 		newNode.slotIndex--;
 		do{
@@ -102,7 +108,7 @@ public class GreedySolve {
 		TimeSlot t = timeslots.get(newNode.slotIndex);				//We get the time slot
 		Room r = rooms.get(newNode.roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
-		Combo combo = new Combo(courseIndex,c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
+		Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
 		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
 			newNode.slotIndex++;
 			return solveBackTrackHard2(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
@@ -120,24 +126,73 @@ public class GreedySolve {
 	}
 
 	
+	public void generateNormal(){
+		this.courseIndexes.clear();
+		for(int i = 0; i < courses.size(); i++) this.courseIndexes.add(i);
+	}
+	
+	public void generateRandom(){
+		this.courseIndexes.clear();
+		while(courseIndexes.size()<courses.size()){
+			int num = ThreadLocalRandom.current().nextInt(0, courses.size());
+			if(!courseIndexes.contains(num)){
+				courseIndexes.add(num);
+			}
+		}
+	}
+	
+	public boolean isValidList(){
+		for(int i = 0; i < courses.size(); i++){
+			if(!courseIndexes.contains(i)) {
+				System.out.println(i);
+				return false;
+			}
+		}
+		return true;
+	}
+	
+
+	
 	public int solver(int[] args){
 		for(int i = 0; i < 4; i++){
 			this.penalties[i] = args[i];
 		}
+		this.isDebug = (args[5]==1);
 		int globalMinimum = -1;
+		this.generateNormal();
 		this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+		
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();
 		int bestIndex = 0;
 		for(int i = 0; i < penalties[0]; i++){
 			int val = this.solveHillClimb(solution, taboos);
 			if(val < globalMinimum){
+				for(Course c : courses){
+					boolean found = false;
+					for(Combo com : solution){
+						if(courses.get(com.courseIndex).equals(c)){
+							found = true;
+							break;
+						}
+					}
+					if(!found) System.out.println("Error, not found " + c.toString());
+				}
 				this.saveSolution(solution);
 				globalMinimum = val;
 				bestIndex = i;
 			}
 			this.clearData();
-			this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+			if(args[4] == 1){
+				this.generateRandom();
+			}
+			while(!this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+				System.out.println("Regen");
+				if(args[4] == 1){
+					this.generateRandom();
+				}
+				this.clearData();
+			}
 		}
 		this.bestValue = globalMinimum;
 		return bestIndex;
@@ -147,6 +202,23 @@ public class GreedySolve {
 		saved.clear();
 		for(Combo c : solution){
 			saved.add(new Combo(c));
+		}
+	}
+	
+	public void testPhase(){
+		for(int i = 0; i < 10; i++){
+			this.generateRandom();
+			if(!this.isValidList())  {
+				System.out.println("Error with list");
+			}
+			if(!this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+				for(int j = 0; j < courses.size();j++) System.out.print(courseIndexes.get(j) + " ");
+				System.out.println("");
+				this.clearData();
+				this.solveBackTrackHard2(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+				break;
+			}
+			this.clearData();
 		}
 	}
 	
@@ -225,43 +297,43 @@ public class GreedySolve {
 				actualNodeIndex++;
 			}
 			if(secondNode != null && swapMode == 0){							//Better course pair to swap
-				System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));			
+				if(isDebug) System.out.print(iterationNumber + ". iteration, better solution: " + this.getValue(nodes));			
 				currentNode = nodes.get(firstNodeIndex);
 				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 				this.setCourse(secondNode, currentNode);
 				nodes.set(firstNodeIndex, secondNode);
-				System.out.println(" to " + this.getValue(nodes));
-				currentNode.print();
-				secondNode.print();
+				if(isDebug) System.out.println(" to " + this.getValue(nodes));
+				if(isDebug) currentNode.print();
+				if(isDebug) secondNode.print();
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
-				System.out.println(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
+				if(isDebug) System.out.println(iterationNumber + ". iteration, better SWAP solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
 				taboos.add(new Taboo(swapMode,currentNode, secondNode));
-				currentNode.print();
-				secondNode.print();
+				if(isDebug) currentNode.print();
+				if(isDebug) secondNode.print();
 				int neighborIndex = this.getIndex(nodes, secondNode);	
 				this.swap(currentNode, secondNode);
 				nodes.set(neighborIndex, currentNode);	
 				nodes.set(firstNodeIndex, secondNode);
-				nodes.get(firstNodeIndex).print();
-				nodes.get(neighborIndex).print();
-				System.out.println(" to " + this.getValue(nodes) + " " + globalMinimum);
+				if(isDebug) nodes.get(firstNodeIndex).print();
+				if(isDebug) nodes.get(neighborIndex).print();
+				if(isDebug) System.out.println(" to " + this.getValue(nodes) + " " + globalMinimum);
 				foundBetter = true;
 			} else if(swapMode == 3 && differentBetterNeighbors != null){
-				System.out.println(iterationNumber + ". iteration, better Different size solution: " + this.getValue(nodes));
+				if(isDebug) System.out.println(iterationNumber + ". iteration, better Different size solution: " + this.getValue(nodes));
 				currentNode = nodes.get(firstNodeIndex);
 				taboos.add(new Taboo(currentNode, differentBetterNeighbors));
-				currentNode.print();
+				if(isDebug) currentNode.print();
 				for(Combo c : differentBetterNeighbors){
-					c.print();
+					if(isDebug) 	c.print();
 				}
 				this.changeDifferentNeighbors(currentNode, differentBetterNeighbors);
-				currentNode.print();
+				if(isDebug) 	currentNode.print();
 				for(Combo c : differentBetterNeighbors){
-					c.print();
+					if(isDebug) 	c.print();
 				}
-				System.out.println(" TO " + this.getValue(nodes));
+				if(isDebug) System.out.println(" TO " + this.getValue(nodes));
 				foundBetter = true;
 			}else {
 				foundBetter = false;

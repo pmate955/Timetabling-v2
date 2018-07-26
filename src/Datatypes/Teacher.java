@@ -60,6 +60,13 @@ public class Teacher {
 		this.availability.addAll(in);
 	}
 	
+	public void deleteUnavailablePeriod(TimeSlot t, int slots){
+		for(int i = 0; i < slots; i++){
+			TimeSlot ts = new TimeSlot(t.getDay(),t.getSlot()+i);
+			if(availability.contains(ts)) availability.remove(ts);
+		}
+	}
+	
 	public void deleteUnavailablePeriod(List<TimeSlot> in){
 		this.availability.removeAll(in);
 	}
