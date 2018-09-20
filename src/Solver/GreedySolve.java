@@ -31,18 +31,19 @@ public class GreedySolve implements Runnable{
 	public List<Course> courses;
 	public List<Topic> topics;
 	public List<TimeSlot> timeslots;
+	public HashMap<Integer, Integer> maxSlotByDay;
 	public Map<String,List<Integer>> courseTeacher;
 	public Thread thread;
 	public int INPUT_DAYS;
-	public int INPUT_SLOTS;
+//	public int INPUT_SLOTS;
 	public int runCount = 0;
 	public int bestValue;
 	
 	public GreedySolve(String filename){
 		this.r = new Reader(filename);
 		r.readFile();
-		this.INPUT_DAYS = r.days;
-		this.INPUT_SLOTS = r.slots;
+	;
+//		this.INPUT_SLOTS = r.slots;
 		this.bestValue = r.bestValue;
 		this.penalties = new int[4];
 		this.args = new int[7];
@@ -68,12 +69,25 @@ public class GreedySolve implements Runnable{
 			courseTeacher.put(to.getName(), tIndexes);
 		}
 		this.timeslots = new ArrayList<TimeSlot>();
-		for(int day = 0; day < INPUT_DAYS; day++){
+		/*for(int day = 0; day < INPUT_DAYS; day++){
 			for(int slot = 0; slot < INPUT_SLOTS; slot++){
 				TimeSlot t = new TimeSlot(day,slot);
 				this.timeslots.add(t);
 			}
+		}*/
+		this.maxSlotByDay = new HashMap<Integer, Integer>();
+		int dayCounter = 0;
+		for(String actual : r.slotMap.keySet()){
+			int count = r.slotMap.get(actual);
+			for(int i = 0; i < count; i++){
+				timeslots.add(new TimeSlot(dayCounter, i));				
+			}
+			maxSlotByDay.put(dayCounter, count);
+			dayCounter++;
 		}
+		this.INPUT_DAYS = dayCounter;
+	//	System.exit(1);
+		
 	}
 	
 	public void clearData(){
@@ -81,10 +95,10 @@ public class GreedySolve implements Runnable{
 		for(Teacher t:teachers) t.clearAvailability();
 	}
 	
-	public void printSolution(){
+	/*public void printSolution(){
 		System.out.println("Solution: ");
 		System.out.println(this.printSolution(this.solution));;
-	}
+	}*/
 	
 	public void printTeachers(){
 		for(Teacher t : teachers) t.print();
@@ -113,7 +127,7 @@ public class GreedySolve implements Runnable{
 		Room r = rooms.get(newNode.roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
 		Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
-		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
+		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > this.getMaxByDay(t.getDay()) || c.getCapacity() > r.getCapacity()){
 			newNode.slotIndex++;
 			return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
 		}
@@ -167,7 +181,7 @@ public class GreedySolve implements Runnable{
 	}
 	
 	public boolean isValid(Combo combo, List<Combo> solved, TimeSlot t, Course c, Room r, Teacher teacher){
-		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
+		if(erroneus(solved,combo) || t.getSlot()+c.getSlots() > this.getMaxByDay(t.getDay()) || c.getCapacity() > r.getCapacity()){
 			return false;	
 		}
 		if(!teacher.isAvailable(combo.getSlotList())){
@@ -257,6 +271,7 @@ public class GreedySolve implements Runnable{
 			} else {
 				while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
 					System.out.println("Regen");
+					System.exit(1);
 					if(args[4] == 1){
 						this.generateRandom();
 					}
@@ -526,7 +541,7 @@ public class GreedySolve implements Runnable{
 			}
 		}
 		for(TimeSlot actual : timeslots){			//Get the empty slots
-			if(actual.getSlot()+input.getSize()>=INPUT_SLOTS) continue;
+			if(actual.getSlot()+input.getSize() >= this.getMaxByDay(actual.getDay())) continue;
 			Combo newCombo = null;
 			for(Room r : rooms){
 				boolean isBad = false;
@@ -555,7 +570,7 @@ public class GreedySolve implements Runnable{
 				List<Combo> act = new ArrayList<Combo>();
 				boolean isOK = true;
 				for(int i = 0; i < input.getSize();){
-					if(t.getSlot()+i >= INPUT_SLOTS) {
+					if(t.getSlot()+i >= this.getMaxByDay(t.getDay())) {
 						isOK = false;
 						break;
 					}
@@ -614,7 +629,7 @@ public class GreedySolve implements Runnable{
 		Room r = rooms.get(c.roomIndex);
 		if(r!=null){
 			for(TimeSlot t : c.getSlotList()){
-				if(t.getSlot()>=INPUT_SLOTS) return true;
+				if(t.getSlot()>= this.getMaxByDay(t.getDay())) return true;
 				if(this.roomIsUsed(solution, c.roomIndex, t)) return true;
 			}
 		}
@@ -703,7 +718,7 @@ public class GreedySolve implements Runnable{
 		return null;
 	}
 	
-	public String printSolution(List<Combo> soltuion){
+	/*public String printSolution(List<Combo> soltuion){
 		String out = "";
 		for(Room r : rooms){
 			out += "Room: " + r.getName() + "\r\n";
@@ -731,7 +746,7 @@ public class GreedySolve implements Runnable{
 		}
 		return out;
 	}
-	
+	*/
 	public String save(){
 		String out = "";
 		out += r.readed;
@@ -749,6 +764,18 @@ public class GreedySolve implements Runnable{
 		}
 	}
 
+	private int getMaxByDay(int key){
+		return maxSlotByDay.get(key);
+	}
+	
+	public int getMaxSlot(){
+		int max = 0;
+		for(int key : maxSlotByDay.keySet()){
+			if(maxSlotByDay.get(key)>max) max = maxSlotByDay.get(key);
+		}
+		return max;
+	}
+	
 	@Override
 	public void run() {
 		this.bestIteration = this.solver();		

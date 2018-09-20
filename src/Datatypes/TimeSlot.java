@@ -8,7 +8,7 @@ public class TimeSlot {
 		this.day = day;
 		this.slot = slot;
 	}
-
+	
 	public int getDay() {
 		return day;
 	}
