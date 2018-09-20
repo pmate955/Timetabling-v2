@@ -167,7 +167,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		Thread tr = new Thread(g);
 		tr.start();
 		while(tr.isAlive()){
-			counter.setText("Running: " + g.runCount);
+			counter.setText("Running: "  + " " + g.runCount);
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
