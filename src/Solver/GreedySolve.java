@@ -37,6 +37,7 @@ public class GreedySolve implements Runnable{
 	public int INPUT_SLOTS;
 	public int runCount = 0;
 	public int bestValue;
+	public int thing;
 	
 	public GreedySolve(String filename){
 		this.r = new Reader(filename);
