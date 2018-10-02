@@ -19,6 +19,7 @@ import Datatypes.Topic;
 
 public class GreedySolve implements Runnable{
 	public Reader r;
+	public ReaderCTT rc;
 	public int[] penalties;					//0 - runCount, 1 - fridayPenalty, 2 - differentRoomPenalty, 3 - 1- check compactness
 	public int[] args;
 	public int bestIteration;
@@ -39,15 +40,7 @@ public class GreedySolve implements Runnable{
 	public int bestValue;
 	public int thing;
 	
-	public GreedySolve(String filename){
-		this.r = new Reader(filename);
-		r.readFile();
-		this.INPUT_DAYS = r.days;
-		this.INPUT_SLOTS = r.slots;
-		this.bestValue = r.bestValue;
-		this.penalties = new int[4];
-		this.args = new int[7];
-		this.isDebug = false;
+	public GreedySolve(String filename, boolean useNewCTT){
 		this.courseIndexes = new ArrayList<Integer>();
 		this.rooms = new ArrayList<Room>();
 		this.saved = new ArrayList<Combo>();
@@ -55,12 +48,33 @@ public class GreedySolve implements Runnable{
 		this.courses = new ArrayList<Course>();
 		this.teachers = new ArrayList<Teacher>();
 		this.topics = new ArrayList<Topic>();
-		this.copyListR(this.rooms, r.rooms);
-		this.copyListT(this.teachers, r.teachers);
-		this.copyListC(this.courses, r.courses);
-		this.copyListTp(this.topics, r.topics);
-		this.copyListSaved(this.saved, r.saved);
+		this.penalties = new int[4];
+		this.args = new int[7];
+		this.isDebug = false;
 		this.courseTeacher = new HashMap<String,List<Integer>>();
+		if(!useNewCTT) {
+			this.r = new Reader(filename);
+			r.readFile();
+			this.INPUT_DAYS = r.days;
+			this.INPUT_SLOTS = r.slots;
+			this.bestValue = r.bestValue;	
+			this.copyListR(this.rooms, r.rooms);
+			this.copyListT(this.teachers, r.teachers);
+			this.copyListC(this.courses, r.courses);
+			this.copyListTp(this.topics, r.topics);
+			this.copyListSaved(this.saved, r.saved);
+		} else {
+			this.rc = new ReaderCTT(filename);
+			rc.read();
+			this.INPUT_DAYS = rc.days;
+			this.INPUT_SLOTS = rc.slots;
+			this.bestValue = rc.bestValue;	
+			this.copyListR(this.rooms, rc.rooms);
+			this.copyListT(this.teachers, rc.teachers);
+			this.copyListC(this.courses, rc.courses);
+			this.copyListTp(this.topics, rc.topics);
+			this.copyListSaved(this.saved, rc.saved);
+		}
 		for(Topic to:topics){
 			List<Integer> tIndexes = new ArrayList<Integer>();
 			for(Teacher t:teachers){
@@ -108,7 +122,11 @@ public class GreedySolve implements Runnable{
 				newNode.roomIndex = 0;										//If there is no more room/time, next teacher
 				newNode.teacherIndex++;
 			}
-			if(newNode.teacherIndex>=teacherIndexes.size()) return false;		//If there are no more teacher, return false
+			if(newNode.teacherIndex>=teacherIndexes.size()) {
+				this.printSolution();
+				System.out.println("Exit with" + c.getName() + " " + teacherIndexes.size());
+				return false;		//If there are no more teacher, return false
+			}
 		}while(used.contains(newNode));
 		TimeSlot t = timeslots.get(newNode.slotIndex);				//We get the time slot
 		Room r = rooms.get(newNode.roomIndex);							//and the room
@@ -227,7 +245,9 @@ public class GreedySolve implements Runnable{
 		this.isDebug = (args[5]==1);
 		int globalMinimum = -1;
 		this.generateNormal();
-		this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
+		if(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
+			System.out.println("Ez már rossz");
+		};
 		
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();

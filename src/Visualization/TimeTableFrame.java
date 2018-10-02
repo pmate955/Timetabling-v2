@@ -32,6 +32,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	
 	private JPanel contentPane;
 	private File selectedFile;
+	private boolean useNew;
 	private GreedySolve g;
 	private JSpinner tryCountSpinner;
 	private JSpinner fridayPenalty;
@@ -86,7 +87,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			int returnValue = jfc.showOpenDialog(this);
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
 				selectedFile = jfc.getSelectedFile();
-				g = new GreedySolve(selectedFile.getAbsolutePath());
+				useNew = false;
+				g = new GreedySolve(selectedFile.getAbsolutePath(), false);
 				nameLabel.setText(selectedFile.getAbsolutePath());
 				if(g.saved.size() != 0){
 					VisualFrame vf = new VisualFrame(g);
@@ -95,6 +97,25 @@ public class TimeTableFrame extends JFrame implements Runnable{
 			}
 		});
 		solverPanel.add(open);
+		JButton openNew = new JButton("Open CTT");
+		openNew.addActionListener((l)->{
+			JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+			jfc.setAcceptAllFileFilterUsed(false);
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("CTT files", "ctt");
+			jfc.addChoosableFileFilter(filter);
+			int returnValue = jfc.showOpenDialog(this);
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
+				selectedFile = jfc.getSelectedFile();
+				useNew = true;
+				g = new GreedySolve(selectedFile.getAbsolutePath(), true);
+				nameLabel.setText(selectedFile.getAbsolutePath());
+				if(g.saved.size() != 0){
+					VisualFrame vf = new VisualFrame(g);
+					vf.setVisible(true);
+				}
+			}
+		});
+		solverPanel.add(openNew);
 		nameLabel = new JLabel("No file selected");
 		solverPanel.add(nameLabel);
 		JButton startButton = new JButton("Start solver");
@@ -153,7 +174,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	
 	@Override
 	public void run() {
-		g = new GreedySolve(selectedFile.getAbsolutePath());		
+		g = new GreedySolve(selectedFile.getAbsolutePath(), useNew);		
 		Instant start = Instant.now();
 		int[] args = new int[7];
 		args[0] = (int)tryCountSpinner.getValue();
