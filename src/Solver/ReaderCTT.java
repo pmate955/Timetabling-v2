@@ -67,6 +67,13 @@ public class ReaderCTT {
 						rooms.add(r);
 						s = br.readLine();
 					}
+				} else if(s.contains("UNAVAILABILITY_CONSTRAINTS:")) {
+					s = br.readLine();
+					while(!s.equals("")) {
+						String[] arr = s.split(" ");
+						this.addUnavailability(arr[0], arr[1], arr[2]);						
+						s = br.readLine();
+					}
 				} else if(s.equals("END.")) {
 					br.close();
 					break;
@@ -79,9 +86,18 @@ public class ReaderCTT {
 			return false;
 		}
 		Collections.sort(rooms, Comparator.comparingInt(Room ::getCapacity));
+		this.printAll();
 		return true;
 	}
 	
+	private void addUnavailability(String topicname, String day, String slot) {
+		TimeSlot t = new TimeSlot(Integer.parseInt(day), Integer.parseInt(slot));
+		for(Course c : courses) {
+			if(c.getTopicname().equals(topicname)) {
+				c.addUnavailability(t);
+			}
+		}
+	}
 	
 	private void generateCourses(String baseName, int count, int students) {
 		for(int i = 0;  i < count; i++) {
@@ -113,8 +129,11 @@ public class ReaderCTT {
 		}
 		System.out.println("-----Courses-------");
 		for(Course c : courses) {
-			System.out.println(c.toString() + " _ "+ c.getTopicname());
+			System.out.print(c.toString() + " _ "+ c.getTopicname() + " ");
+			System.out.println();
+			c.printUnavailability();
 		}
+		
 	}
 
 }

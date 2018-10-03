@@ -1,11 +1,15 @@
 package Datatypes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Course {
 	private String name;
 	private int capacity;
 	private int slots;
 	private boolean isFixed;
 	private String topicname;
+	private List<TimeSlot> unavailability;
 	
 	public Course(String name, String topicname,  int slots, int capacity){
 		this.name = name;
@@ -13,6 +17,21 @@ public class Course {
 		this.slots = slots;
 		this.isFixed = false;
 		this.topicname = topicname;
+		this.unavailability = new ArrayList<TimeSlot>();
+	}
+	
+	public void setUnavailabilty(List<TimeSlot> input) {
+		this.unavailability.addAll(input);
+	}
+	
+	public void addUnavailability(TimeSlot t) {
+		this.unavailability.add(t);
+	}
+	
+	public void printUnavailability() {
+		for(TimeSlot t : unavailability) {
+			System.out.print(" | " + t.toString());
+		}
 	}
 	
 	public Course(Course input){
