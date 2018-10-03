@@ -20,6 +20,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -41,6 +42,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JCheckBox useRandom;
 	private JCheckBox useDebugMode;
 	private JCheckBox useSlower;
+	private JProgressBar softBar;
 	private JLabel counter;
 	private JLabel nameLabel;
 	
@@ -144,7 +146,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
-		softPanel.setLayout(new GridLayout(4,2));
+		softPanel.setLayout(new GridLayout(5,2));
 		tryCountSpinner = new JSpinner();		
 		tryCountSpinner.setValue(1);		
 		fridayPenalty = new JSpinner();
@@ -152,9 +154,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		differentRoomPenalty = new JSpinner();
 		differentRoomPenalty.setValue(0);
 		checkCompactness = new JCheckBox("Check teacher compactness");
-		checkCompactness.setSelected(true);
+		checkCompactness.setSelected(false);
 		useDebugMode = new JCheckBox("Debug mode");
 		useDebugMode.setSelected(false);
+		softBar = new JProgressBar(0, 10);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
 		softPanel.add(new JLabel("Friday penalty"));
@@ -163,6 +166,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		softPanel.add(differentRoomPenalty);
 		softPanel.add(checkCompactness);
 		softPanel.add(useDebugMode);
+		softPanel.add(new JLabel("Iterations"));
+		softPanel.add(softBar);
 		p.add(softPanel);
 		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
@@ -187,8 +192,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		g.setArgs(args);
 		Thread tr = new Thread(g);
 		tr.start();
+		this.softBar.setMaximum(g.softMax);
 		while(tr.isAlive()){
-			counter.setText("Running: "  + " " + g.runCount);
+				counter.setText("Running: "  + " " + g.runCount);
+				this.softBar.setValue(g.softStatus);
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {

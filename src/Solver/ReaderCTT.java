@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import Datatypes.*;
@@ -76,6 +78,7 @@ public class ReaderCTT {
 			System.out.println("Error in reader");
 			return false;
 		}
+		Collections.sort(rooms, Comparator.comparingInt(Room ::getCapacity));
 		return true;
 	}
 	

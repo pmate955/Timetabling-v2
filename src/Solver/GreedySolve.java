@@ -38,7 +38,8 @@ public class GreedySolve implements Runnable{
 	public int INPUT_SLOTS;
 	public int runCount = 0;
 	public int bestValue;
-	public int thing;
+	public int softStatus;
+	public int softMax;
 	
 	public GreedySolve(String filename, boolean useNewCTT){
 		this.courseIndexes = new ArrayList<Integer>();
@@ -89,6 +90,7 @@ public class GreedySolve implements Runnable{
 				this.timeslots.add(t);
 			}
 		}
+		this.softMax = courses.size();
 	}
 	
 	public void clearData(){
@@ -248,7 +250,7 @@ public class GreedySolve implements Runnable{
 		if(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
 			System.out.println("Ez már rossz");
 		};
-		
+		this.saveSolution(solution);
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();
 		int bestIndex = 0;
@@ -341,6 +343,7 @@ public class GreedySolve implements Runnable{
 		boolean foundBetter = true;
 		while(foundBetter){
 			iterationNumber++;
+			if(isDebug) System.out.println(iterationNumber);
 			int actualNodeIndex = 0;
 			int firstNodeIndex = -1;
 			Combo secondNode = null;
@@ -352,6 +355,8 @@ public class GreedySolve implements Runnable{
 				currentNode = nodes.get(actualNodeIndex);
 				List<Combo> neighbors = this.getNeighbors(nodes, currentNode);
 				int startValue = this.getValue(nodes);
+				//if(isDebug) System.out.println("Mid cyc " + actualNodeIndex);
+				this.softStatus = actualNodeIndex;
 				for(Combo node : neighbors){
 					int localSwapMode = 0;
 					if(node.courseIndex==-1){								//Place the combo to the new place
@@ -551,6 +556,7 @@ public class GreedySolve implements Runnable{
 			Combo newCombo = null;
 			for(Room r : rooms){
 				boolean isBad = false;
+				if(r.getCapacity() < input.getSize()) continue;
 				newCombo = new Combo(input.getSize(), actual, rooms.indexOf(r), r.getName());
 				for(Combo c : this.getComboByRoom(r, solution)){
 					if(newCombo.hasConflict(c)){
@@ -559,7 +565,7 @@ public class GreedySolve implements Runnable{
 					}
 				}
 				if(!isBad && teachers.get(input.teacherIndex).isAvailable(newCombo.getSlotList())){
-					output.add(newCombo);
+					if(r.getCapacity() >= newCombo.getSize() )output.add(newCombo);
 				}
 			}
 			
@@ -572,6 +578,7 @@ public class GreedySolve implements Runnable{
 		List<List<Combo>> out = new ArrayList<List<Combo>>();
 		if(input.getSize() == 1) return out;
 		for(Room r : rooms){
+			if(r.getCapacity() < input.getSize()) continue;
 			for(TimeSlot t : timeslots){
 				List<Combo> act = new ArrayList<Combo>();
 				boolean isOK = true;
@@ -727,7 +734,7 @@ public class GreedySolve implements Runnable{
 	public String printSolution(List<Combo> soltuion){
 		String out = "";
 		for(Room r : rooms){
-			out += "Room: " + r.getName() + "\r\n";
+			out += "Room: " + r.getName() + " " + r.getCapacity() + "\r\n";
 			out += "=============================================================\r\n";
 			List<Combo> combosByR = this.getComboByRoom(r, soltuion);
 			for(int slot = 0; slot < INPUT_SLOTS; slot++){
