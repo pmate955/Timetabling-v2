@@ -120,6 +120,15 @@ public class GreedySolve implements Runnable{
 				newNode.slotIndex=0;
 				newNode.roomIndex++;
 			}
+			while(c.isUnavailable(timeslots.get(newNode.slotIndex))) {				//Check later
+				newNode.slotIndex++;
+				if(newNode.slotIndex>=timeslots.size()) {
+					newNode.slotIndex=0;
+					newNode.roomIndex++;
+					break;
+				}
+			}
+			
 			if(newNode.roomIndex >= rooms.size()){
 				newNode.roomIndex = 0;										//If there is no more room/time, next teacher
 				newNode.teacherIndex++;

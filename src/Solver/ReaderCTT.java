@@ -86,7 +86,7 @@ public class ReaderCTT {
 			return false;
 		}
 		Collections.sort(rooms, Comparator.comparingInt(Room ::getCapacity));
-		this.printAll();
+		//this.printAll();
 		return true;
 	}
 	

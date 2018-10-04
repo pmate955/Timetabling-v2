@@ -34,6 +34,10 @@ public class Course {
 		}
 	}
 	
+	public boolean isUnavailable(TimeSlot input) {
+		return this.unavailability.contains(input);
+	}
+	
 	public Course(Course input){
 		this.name = input.name;
 		this.capacity = input.capacity;
