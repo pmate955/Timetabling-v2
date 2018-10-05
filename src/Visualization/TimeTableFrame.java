@@ -193,8 +193,17 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		Thread tr = new Thread(g);
 		tr.start();
 		this.softBar.setMaximum(g.softMax);
+		Instant startSoft = Instant.now();
+		Instant stop;
 		while(tr.isAlive()){
 				counter.setText("Running: "  + " " + g.runCount);
+				int act = g.softStatus;
+				if(act <= 10) {
+					startSoft = Instant.now();
+				} else if(act >= g.softMax-2) {
+					stop = Instant.now();
+					System.out.println("Iteration : " + Duration.between(startSoft, stop));
+				};
 				this.softBar.setValue(g.softStatus);
 			try {
 				Thread.sleep(100);

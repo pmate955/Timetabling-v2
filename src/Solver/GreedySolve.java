@@ -561,6 +561,7 @@ public class GreedySolve implements Runnable{
 			}
 		}
 		for(TimeSlot actual : timeslots){			//Get the empty slots
+			if(courses.get(input.courseIndex).isUnavailable(actual)) continue;
 			if(actual.getSlot()+input.getSize()>=INPUT_SLOTS) continue;
 			Combo newCombo = null;
 			for(Room r : rooms){
