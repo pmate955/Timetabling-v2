@@ -95,6 +95,7 @@ public class ReaderCTT {
 			return false;
 		}
 		Collections.sort(rooms, Comparator.comparingInt(Room ::getCapacity));
+		System.out.println(readed.toString());
 		//this.printAll();
 		return true;
 	}
