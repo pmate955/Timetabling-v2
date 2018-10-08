@@ -85,6 +85,9 @@ public class Course {
 		this.isFixed = true;
 	}
 	
+	public String getTopicName() {
+		return this.topicname;
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

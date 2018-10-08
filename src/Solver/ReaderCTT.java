@@ -20,7 +20,7 @@ public class ReaderCTT {
 	public int slots = 0;
 	public int bestValue;
 	private String filename;
-	public String readed;
+	public StringBuilder readed;
 	
 	public ReaderCTT(String filename) {
 		this.filename = filename;
@@ -29,7 +29,7 @@ public class ReaderCTT {
 		this.courses = new ArrayList<Course>();
 		this.topics = new ArrayList<Topic>();
 		this.saved = new ArrayList<Combo>();
-		this.readed = "";
+		this.readed = new StringBuilder("");
 	}
 	
 	public boolean read() {
@@ -37,6 +37,7 @@ public class ReaderCTT {
 			BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
 			String s = br.readLine();
 			while(s != null) {
+				readed.append(s + "\r\n");
 				if(s.contains("Days: ")) {							//Read days number
 					String[] arr = s.split(" ");
 					this.days = Integer.parseInt(arr[1]);
@@ -45,6 +46,7 @@ public class ReaderCTT {
 					this.slots = Integer.parseInt(arr[1]);
 				} else if(s.contains("COURSES:")) {					//Read lis of topics, and generate courses
 					s = br.readLine();
+					readed.append(s + "\r\n");
 					while(!s.equals("")) {
 						String[] arr = s.split(" ");
 						Teacher t = this.getTeacherByName(arr[1]);
@@ -58,22 +60,29 @@ public class ReaderCTT {
 						topics.add(new Topic(arr[0]));
 						this.generateCourses(arr[0], Integer.parseInt(arr[2]), Integer.parseInt(arr[4]));
 						s = br.readLine();
+						readed.append(s + "\r\n");
 					}
 				} else if(s.contains("ROOMS:")) {					//Read rooms
 					s = br.readLine();
+					readed.append(s + "\r\n");
 					while(!s.equals("")) {
 						String[] arr = s.split("\\t");
 						Room r = new Room(arr[0], days, slots, Integer.parseInt(arr[1]));
 						rooms.add(r);
 						s = br.readLine();
+						readed.append(s + "\r\n");
 					}
+					
 				} else if(s.contains("UNAVAILABILITY_CONSTRAINTS:")) {
 					s = br.readLine();
+					readed.append(s + "\r\n");
 					while(!s.equals("")) {
 						String[] arr = s.split(" ");
 						this.addUnavailability(arr[0], arr[1], arr[2]);						
 						s = br.readLine();
+						readed.append(s + "\r\n");
 					}
+					
 				} else if(s.equals("END.")) {
 					br.close();
 					break;

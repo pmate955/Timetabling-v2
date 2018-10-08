@@ -40,6 +40,7 @@ public class GreedySolve implements Runnable{
 	public int bestValue;
 	public int softStatus;
 	public int softMax;
+	private boolean useNew;
 	
 	public GreedySolve(String filename, boolean useNewCTT){
 		this.courseIndexes = new ArrayList<Integer>();
@@ -53,6 +54,7 @@ public class GreedySolve implements Runnable{
 		this.args = new int[7];
 		this.isDebug = false;
 		this.courseTeacher = new HashMap<String,List<Integer>>();
+		this.useNew = useNewCTT;
 		if(!useNewCTT) {
 			this.r = new Reader(filename);
 			r.readFile();
@@ -485,7 +487,7 @@ public class GreedySolve implements Runnable{
 		value += (max1-min1);
 		for(Teacher te : teachers){														//TEacher compactness
 			for(int day = 0; day < INPUT_DAYS; day++){
-				value += this.getPenaltyByTeacherDay(input, te, day);
+				//value += this.getPenaltyByTeacherDay(input, te, day);
 				int min = 10;
 				int max = -1;
 				List<TimeSlot> in = te.getAvailabilityAtDay(day);				
@@ -772,12 +774,19 @@ public class GreedySolve implements Runnable{
 	
 	public String save(){
 		String out = "";
-		out += r.readed;
-		for(Combo c : saved){
-			out += "Combo;" + c.courseIndex + ";" + courses.get(c.courseIndex).getName() + ";" + c.getSize() + ";" + c.getFirstSlot().getDay() + ";" 
-					+ c.getFirstSlot().getSlot() + ";" + c.roomIndex + ";" + rooms.get(c.roomIndex).getName() + ";" + c.teacherIndex +"\r\n";
+		if(!useNew) {
+			out += r.readed;
+			for(Combo c : saved){
+				out += "Combo;" + c.courseIndex + ";" + courses.get(c.courseIndex).getName() + ";" + c.getSize() + ";" + c.getFirstSlot().getDay() + ";" 
+						+ c.getFirstSlot().getSlot() + ";" + c.roomIndex + ";" + rooms.get(c.roomIndex).getName() + ";" + c.teacherIndex +"\r\n";
+			}
+			out += "BestValue;" + this.bestValue + "\r\n";
+		} else {
+			out += rc.readed.toString();
+			for(Combo c : saved) {
+				out += courses.get(c.courseIndex).getTopicname() + " " + rooms.get(c.roomIndex).getName() + " " + c.getFirstSlot().getDay() + " " + c.getFirstSlot().getSlot() + "\r\n";
+			}
 		}
-		out += "BestValue;" + this.bestValue + "\r\n";
 		return out;
 	}
 	
