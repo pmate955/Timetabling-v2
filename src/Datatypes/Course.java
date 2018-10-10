@@ -1,6 +1,7 @@
 package Datatypes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Course {
@@ -9,7 +10,7 @@ public class Course {
 	private int slots;
 	private boolean isFixed;
 	private String topicname;
-	private List<TimeSlot> unavailability;
+	public List<TimeSlot> unavailability;
 	
 	public Course(String name, String topicname,  int slots, int capacity){
 		this.name = name;
@@ -24,6 +25,7 @@ public class Course {
 		this.unavailability.addAll(input);
 	}
 	
+	
 	public void addUnavailability(TimeSlot t) {
 		this.unavailability.add(t);
 	}
@@ -36,6 +38,10 @@ public class Course {
 	
 	public boolean isUnavailable(TimeSlot input) {
 		return this.unavailability.contains(input);
+	}
+	
+	public boolean isUnavailable(List<TimeSlot> input) {
+		return !Collections.disjoint(unavailability, input);
 	}
 	
 	public Course(Course input){

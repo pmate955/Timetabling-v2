@@ -48,11 +48,10 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 	}
 
 	public boolean hasConflict(Combo input){
-		boolean out = false;
 		if(this.roomIndex==input.roomIndex){
 			if(this.contains(input.getSlotList())) return true;
 		}
-		return out;
+		return false;
 	}
 	
 	public List<TimeSlot> getSlotList() {

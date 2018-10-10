@@ -515,7 +515,7 @@ public class GreedySolve implements Runnable{
 		int teacherIndex = teachers.indexOf(te);
 		Combo last = null;
 		for(Combo c : input){
-			if(c.teacherIndex == teacherIndex && c.getFirstSlot().getDay() == day){
+			if(c.teacherIndex == teacherIndex /*&& c.getFirstSlot().getDay() == day*/){
 				if(last == null) last = c;
 				else if(last.roomIndex != c.roomIndex){
 					output += penalties[2];
@@ -523,7 +523,7 @@ public class GreedySolve implements Runnable{
 				}
 			}
 		}
-		return output;
+		return 0;
 	}
 	
 	public void changeDifferentNeighbors(Combo bigger, List<Combo> neighbor){
@@ -556,7 +556,7 @@ public class GreedySolve implements Runnable{
 		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
 			int firstIndex = input.teacherIndex;
 			int cIndex = c.teacherIndex;
-			if(!c.equals(input) && c.getSize() == input.getSize() && firstIndex != cIndex){
+			if(!c.equals(input) && c.getSize() == input.getSize() && firstIndex != cIndex && !courses.get(c.courseIndex).isUnavailable(input.t) && !courses.get(input.courseIndex).isUnavailable(c.t)){
 				if(teachers.get(firstIndex).isAvailable(c.getSlotList()) && teachers.get(cIndex).isAvailable(input.getSlotList())){
 					output.add(c);	
 				}					
