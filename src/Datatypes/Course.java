@@ -2,12 +2,15 @@ package Datatypes;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Course {
 	private String name;
 	private int capacity;
 	private int slots;
+	private Set<Integer> curricula;
 	private boolean isFixed;
 	private String topicname;
 	public List<TimeSlot> unavailability;
@@ -19,6 +22,7 @@ public class Course {
 		this.isFixed = false;
 		this.topicname = topicname;
 		this.unavailability = new ArrayList<TimeSlot>();
+		this.curricula = new HashSet<Integer>();
 	}
 	
 	public void setUnavailabilty(List<TimeSlot> input) {
@@ -50,6 +54,7 @@ public class Course {
 		this.slots = input.slots;
 		this.isFixed = input.isFixed();
 		this.topicname = input.topicname;
+		this.curricula = input.curricula;
 	}
 
 	public String getTopicname() {
@@ -60,7 +65,9 @@ public class Course {
 		return slots;
 	}
 
-
+	public Set<Integer> getCurricula() {
+		return this.curricula;
+	}
 
 	public String getName() {
 		return name;
@@ -70,6 +77,9 @@ public class Course {
 		this.name = name;
 	}
 	
+	public void addCurriculum(int num) {
+		this.curricula.add(num);
+	}
 
 	public int getCapacity() {
 		return capacity;

@@ -2,11 +2,11 @@ package Solver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.sound.midi.Synthesizer;
 
 import Datatypes.Combo;
 import Datatypes.Course;
@@ -656,6 +656,15 @@ public class GreedySolve implements Runnable{
 			for(TimeSlot t : c.getSlotList()){
 				if(t.getSlot()>=INPUT_SLOTS) return true;
 				if(this.roomIsUsed(solution, c.roomIndex, t)) return true;
+				for(Combo co : solution) {
+					if(co.contains(c.t)) {
+						Set<Integer> tmp = new HashSet<Integer>(courses.get(c.courseIndex).getCurricula());
+						tmp.retainAll(courses.get(co.courseIndex).getCurricula());
+						if(tmp.size() > 0) {
+							return true;
+						}
+					}
+				}
 			}
 		}
 		return false;

@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import Datatypes.*;
 public class ReaderCTT {
@@ -16,6 +18,7 @@ public class ReaderCTT {
 	public List<Course> courses;
 	public List<Topic> topics;
 	public List<Combo> saved;
+	public List<String> curriculas;
 	public int days = 0;
 	public int slots = 0;
 	public int bestValue;
@@ -29,6 +32,7 @@ public class ReaderCTT {
 		this.courses = new ArrayList<Course>();
 		this.topics = new ArrayList<Topic>();
 		this.saved = new ArrayList<Combo>();
+		this.curriculas = new ArrayList<String>();
 		this.readed = new StringBuilder("");
 	}
 	
@@ -81,11 +85,23 @@ public class ReaderCTT {
 						this.addUnavailability(arr[0], arr[1], arr[2]);						
 						s = br.readLine();
 						readed.append(s + "\r\n");
+						
 					}
 					
 				} else if(s.equals("END.")) {
 					br.close();
 					break;
+				} else if(s.contains("CURRICULA:")) {
+					s = br.readLine();
+					readed.append(s + "\r\n");
+					while(!s.equals("")) {
+						String[] arr = s.split(" ");
+						this.curriculas.add(arr[0]);
+						this.addCurricula(arr);				
+						s = br.readLine();
+						readed.append(s + "\r\n");
+						
+					}
 				}
 				
 				s = br.readLine();
@@ -95,11 +111,33 @@ public class ReaderCTT {
 			return false;
 		}
 		Collections.sort(rooms, Comparator.comparingInt(Room ::getCapacity));
-		System.out.println(readed.toString());
-		//this.printAll();
+		//System.out.println(readed.toString());
+		/*//this.printAll();
+
+		System.out.println(courses.get(0).getCurricula());
+		System.out.println(courses.get(3).getCurricula());
+		Set<Integer> tmp = new HashSet<Integer>(courses.get(0).getCurricula());
+		tmp.retainAll(courses.get(3).getCurricula());
+		System.out.println(tmp.size());
+		System.out.println(courses.get(0).getCurricula());
+		System.out.println(courses.get(3).getCurricula());*/
 		return true;
 	}
 	
+	private void addCurricula(String[] arr) {
+		int index = this.curriculas.indexOf(arr[0]);
+		for(int i = 3; i < 3+Integer.parseInt(arr[2]); i++) {
+			String topicname = arr[i];
+			for(Course c : courses) {
+				if(c.getTopicname().equals(topicname)) {
+					c.addCurriculum(index);
+				}
+			}
+		}
+		System.out.println("");
+		
+	}
+
 	private void addUnavailability(String topicname, String day, String slot) {
 		TimeSlot t = new TimeSlot(Integer.parseInt(day), Integer.parseInt(slot));
 		for(Course c : courses) {
@@ -139,9 +177,12 @@ public class ReaderCTT {
 		}
 		System.out.println("-----Courses-------");
 		for(Course c : courses) {
-			System.out.print(c.toString() + " _ "+ c.getTopicname() + " ");
+			System.out.print(c.toString() + " _ "+ c.getTopicname() + " " );
+			for(int i : c.getCurricula()) {
+				System.out.print(curriculas.get(i) + " ");
+			}
 			System.out.println();
-			c.printUnavailability();
+			//c.printUnavailability();
 		}
 		
 	}
