@@ -557,6 +557,9 @@ public class GreedySolve implements Runnable{
 			int firstIndex = input.teacherIndex;
 			int cIndex = c.teacherIndex;
 			if(!c.equals(input) && c.getSize() == input.getSize() && firstIndex != cIndex && !courses.get(c.courseIndex).isUnavailable(input.t) && !courses.get(input.courseIndex).isUnavailable(c.t)){
+				Set<Integer> tmp = new HashSet<Integer>(courses.get(input.courseIndex).getCurricula());
+				tmp.retainAll(courses.get(c.courseIndex).getCurricula());
+				if(tmp.size() > 0) continue;
 				if(teachers.get(firstIndex).isAvailable(c.getSlotList()) && teachers.get(cIndex).isAvailable(input.getSlotList())){
 					output.add(c);	
 				}					
@@ -577,7 +580,10 @@ public class GreedySolve implements Runnable{
 					}
 				}
 				if(!isBad && teachers.get(input.teacherIndex).isAvailable(newCombo.getSlotList())){
-					if(r.getCapacity() >= newCombo.getSize() )output.add(newCombo);
+					if(r.getCapacity() >= newCombo.getSize() ) {
+						if(hasConflictCurriculum(solution, newCombo, input.courseIndex));
+						output.add(newCombo);
+					}
 				}
 			}
 			
@@ -648,7 +654,20 @@ public class GreedySolve implements Runnable{
 	
 	
 
-	
+	private boolean hasConflictCurriculum(List<Combo> solution, Combo in, int courseIndex){
+		boolean hasSame = false;
+		Course act = courses.get(courseIndex);
+		Set<Integer> firstCurricula = act.getCurricula();
+		for(Combo c : solution) {
+			Course a = courses.get(c.courseIndex);
+			if(in.contains(c.t)) {
+				Set<Integer> actualCurr = new HashSet<Integer>(a.getCurricula());
+				actualCurr.retainAll(firstCurricula);
+				if(actualCurr.size() > 0) return true;
+			}
+		}
+		return false;
+	}
 	
 	public boolean erroneus(List<Combo> solution, Combo c){
 		Room r = rooms.get(c.roomIndex);

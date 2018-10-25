@@ -18,22 +18,30 @@ public class VisualSlot extends JPanel {
 		setBorder(new LineBorder(Color.BLACK));
 		JLabel lbl = null;
 		JLabel tLbl = null;
+		JLabel curr = null;
 		if(c == null){
 			lbl = new JLabel("empty");
 			tLbl = new JLabel("No teacher");
+			curr = new JLabel("-");
 		} 
 		else{
 			lbl = new JLabel(g.courses.get(c.courseIndex).getName());
 			tLbl = new JLabel(c.teacherIndex == -1?"No teacher":g.teachers.get(c.teacherIndex).getName());
 			if(c.teacherIndex == -1) tLbl.setForeground(Color.RED);
 			else tLbl.setForeground(Color.BLUE);
+			curr = new JLabel(g.courses.get(c.courseIndex).getCurricula() + "");
 		}
 		
 		lbl.setHorizontalAlignment(JLabel.CENTER);
 		lbl.setVerticalAlignment(JLabel.CENTER);		
-		add(lbl, BorderLayout.CENTER);
+		add(lbl, BorderLayout.NORTH);
+		curr.setHorizontalAlignment(JLabel.CENTER);
+		curr.setVerticalAlignment(JLabel.CENTER);
+		add(curr, BorderLayout.CENTER);
 		tLbl.setHorizontalAlignment(JLabel.CENTER);
 		tLbl.setVerticalAlignment(JLabel.CENTER);
+		
+		
 		add(tLbl, BorderLayout.SOUTH);
 	}
 	
