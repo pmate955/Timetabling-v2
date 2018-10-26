@@ -819,6 +819,8 @@ public class GreedySolve implements Runnable{
 			out += "BestValue;" + this.bestValue + "\r\n";
 		} else {
 			out += rc.readed.toString();
+			out += "\r\n";
+			out += "SOLUTION:\r\n";
 			for(Combo c : saved) {
 				out += courses.get(c.courseIndex).getTopicname() + " " + rooms.get(c.roomIndex).getName() + " " + c.getFirstSlot().getDay() + " " + c.getFirstSlot().getSlot() + "\r\n";
 			}

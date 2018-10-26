@@ -3,8 +3,10 @@ package Visualization;
 import java.awt.GridLayout;
 import java.sql.Timestamp;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -12,6 +14,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import Datatypes.Room;
 import Solver.GreedySolve;
@@ -41,11 +45,22 @@ public class VisualFrame extends JFrame {
 		JMenuItem save = new JMenuItem("Save txt");
 		save.addActionListener((l)->{
 			if(g!=null){
-				if(Writer.writeFile("out.txt", g)){
-					JOptionPane.showMessageDialog(this, "Saving succesful");
-				} else {
-					JOptionPane.showMessageDialog(this, "Error while saving");
-				};
+				JFileChooser jc = new JFileChooser();
+				FileFilter imageFilter = new FileNameExtensionFilter(
+					    "CTT files", "ctt");
+				jc.setFileFilter(imageFilter);
+				jc.setAcceptAllFileFilterUsed(false);
+				int returnVal = jc.showSaveDialog(this);
+				if(returnVal == JFileChooser.APPROVE_OPTION){
+					String urlOut = jc.getSelectedFile().toString();
+					if(!urlOut.contains(".ctt")) urlOut += ".ctt";
+					if(Writer.writeFile(urlOut, g)){
+						JOptionPane.showMessageDialog(this, "Saving succesful");
+					} else {
+						JOptionPane.showMessageDialog(this, "Error while saving");
+					};
+				}
+				
 			}
 		});
 		fileMenu.add(save);
