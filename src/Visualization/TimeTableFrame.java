@@ -40,8 +40,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 	private JCheckBox useDebugMode;
 	private JCheckBox useSlower;
 	private JProgressBar softBar;
+	private JProgressBar estimatedBar;
 	private JLabel counter;
 	private JLabel nameLabel;
+	private JLabel timeLabel,iterationsLabel;
 	
 	public TimeTableFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -143,7 +145,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		
 		JPanel softPanel = new JPanel();
 		softPanel.setBorder(BorderFactory.createTitledBorder("Soft solver settings"));
-		softPanel.setLayout(new GridLayout(5,2));
+		softPanel.setLayout(new GridLayout(6,2));
 		tryCountSpinner = new JSpinner();		
 		tryCountSpinner.setValue(1);		
 		fridayPenalty = new JSpinner();
@@ -154,7 +156,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		checkCompactness.setSelected(false);
 		useDebugMode = new JCheckBox("Debug mode");
 		useDebugMode.setSelected(false);
+		timeLabel = new JLabel("Iterations");
 		softBar = new JProgressBar(0, 10);
+		iterationsLabel = new JLabel("Value of solution: ");
+		estimatedBar = new JProgressBar(0,10);
 		softPanel.add(new JLabel("Iteration number: "));
 		softPanel.add(tryCountSpinner);
 		softPanel.add(new JLabel("Friday penalty"));
@@ -163,8 +168,10 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		softPanel.add(differentRoomPenalty);
 		softPanel.add(checkCompactness);
 		softPanel.add(useDebugMode);
-		softPanel.add(new JLabel("Iterations"));
+		softPanel.add(timeLabel);
 		softPanel.add(softBar);
+		softPanel.add(iterationsLabel);
+		softPanel.add(estimatedBar);
 		p.add(softPanel);
 		scrollPane.setViewportView(p);
 		this.getContentPane().add(scrollPane);
@@ -192,6 +199,8 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		this.softBar.setMaximum(g.softMax);
 		Instant startSoft = Instant.now();
 		Instant stop;
+		int maxSoft = 0;
+		boolean isInitialized = false;
 		while(tr.isAlive()){
 				counter.setText("Running: "  + " " + g.runCount);
 				int act = g.softStatus;
@@ -199,8 +208,19 @@ public class TimeTableFrame extends JFrame implements Runnable{
 					startSoft = Instant.now();
 				} else if(act >= g.softMax-2) {
 					stop = Instant.now();
-					System.out.println("Iteration : " + Duration.between(startSoft, stop));
+					timeLabel.setText("Iteration: " + Duration.between(startSoft, stop));
 				};
+				if(!isInitialized && g.isSecondPhase) {
+					maxSoft = g.getValue(g.saved);
+					System.out.println(maxSoft);
+					this.estimatedBar.setMaximum(maxSoft);
+					this.estimatedBar.setValue(0);
+					isInitialized = true;
+				}
+				if(g.isSecondPhase) {
+					estimatedBar.setValue(maxSoft-g.bestIteration);
+					iterationsLabel.setText("Value of solution: " + g.bestIteration);
+				}
 				this.softBar.setValue(g.softStatus);
 			try {
 				Thread.sleep(10);

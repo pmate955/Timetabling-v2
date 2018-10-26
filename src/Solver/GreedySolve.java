@@ -23,7 +23,9 @@ public class GreedySolve implements Runnable{
 	public int[] penalties;					//0 - runCount, 1 - fridayPenalty, 2 - differentRoomPenalty, 3 - 1- check compactness
 	public int[] args;
 	public int bestIteration;
+	public int softValue;
 	public boolean isDebug;
+	public boolean isSecondPhase;
 	public List<Integer> courseIndexes;
 	public List<Room> rooms;
 	public List<Combo> solution;
@@ -51,6 +53,7 @@ public class GreedySolve implements Runnable{
 		this.teachers = new ArrayList<Teacher>();
 		this.topics = new ArrayList<Topic>();
 		this.penalties = new int[4];
+		this.isSecondPhase = false;
 		this.args = new int[7];
 		this.isDebug = false;
 		this.courseTeacher = new HashMap<String,List<Integer>>();
@@ -136,8 +139,8 @@ public class GreedySolve implements Runnable{
 				newNode.teacherIndex++;
 			}
 			if(newNode.teacherIndex>=teacherIndexes.size()) {
-				this.printSolution();
-				System.out.println("Exit with" + c.getName() + " " + teacherIndexes.size());
+				
+			//	System.out.println("Exit with" + c.getName() + " " + teacherIndexes.size());
 				return false;		//If there are no more teacher, return false
 			}
 		}while(used.contains(newNode));
@@ -258,15 +261,18 @@ public class GreedySolve implements Runnable{
 		this.isDebug = (args[5]==1);
 		int globalMinimum = -1;
 		this.generateNormal();
-		if(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
-			System.out.println("Ez már rossz");
+		while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
+			this.clearData();
+			this.generateRandom();
 		};
 		this.saveSolution(solution);
 		globalMinimum = this.getValue(solution);
 		List<Taboo> taboos = new ArrayList<Taboo>();
 		int bestIndex = 0;
 		for(int i = 0; i < penalties[0]; i++){
+			isSecondPhase = true;
 			int val = this.solveHillClimb(solution, taboos);
+			
 			if(val < globalMinimum){
 				for(Course c : courses){
 					boolean found = false;
@@ -455,9 +461,11 @@ public class GreedySolve implements Runnable{
 				}
 				if(isDebug) System.out.println(" TO " + this.getValue(nodes));
 				foundBetter = true;
+				
 			}else {
 				foundBetter = false;
 			}
+			bestIteration = this.getValue(nodes);
 		}
 		return globalMinimum;
 		
