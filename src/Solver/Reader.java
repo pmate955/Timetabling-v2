@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import Datatypes.*;
@@ -14,6 +15,7 @@ public class Reader {
 	public List<Course> courses;
 	public List<Topic> topics;
 	public List<Combo> saved;
+	public HashMap<String,Integer> slotMap;
 	public int days = 0;
 	public int slots = 0;
 	public int bestValue;
@@ -27,6 +29,7 @@ public class Reader {
 		this.courses = new ArrayList<Course>();
 		this.topics = new ArrayList<Topic>();
 		this.saved = new ArrayList<Combo>();
+		this.slotMap = new HashMap<String, Integer>();
 		this.readed = "";
 	}
 	
@@ -37,7 +40,9 @@ public class Reader {
 			while(s!=null){				
 				String[] token = s.split(";");
 				if(!token[0].equals("Combo"))  readed += s + "\r\n";
-				if(token[0].equals("Days")) this.days = Integer.parseInt(token[1]);
+				if(token[0].equals("TimeGroup")) slotMap.put(token[1], 0);
+				else if(token[0].equals("Time")) slotMap.put(token[1], slotMap.get(token[1]) + 1);
+				else if(token[0].equals("Days")) this.days = Integer.parseInt(token[1]);
 				else if(token[0].equals("Slots")) this.slots = Integer.parseInt(token[1]);
 				else if(token[0].equals("Room")) this.addRoom(token);
 				else if(token[0].equals("Teacher")) this.addTeacher(token);
