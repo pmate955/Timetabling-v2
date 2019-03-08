@@ -1,6 +1,7 @@
 package Solver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ public class GreedySolve implements Runnable{
 	public boolean isDebug;
 	public boolean isSecondPhase;
 	public List<Integer> courseIndexes;
+	public List<List<Integer>> usedIndexes;
 	public List<Room> rooms;
 	public List<Combo> solution;
 	public List<Combo> saved;
@@ -46,6 +48,7 @@ public class GreedySolve implements Runnable{
 	
 	public GreedySolve(String filename, boolean useNewCTT){
 		this.courseIndexes = new ArrayList<Integer>();
+		this.usedIndexes = new ArrayList<List<Integer>>();
 		this.rooms = new ArrayList<Room>();
 		this.saved = new ArrayList<Combo>();
 		this.solution = new ArrayList<Combo>();
@@ -263,7 +266,10 @@ public class GreedySolve implements Runnable{
 		this.generateNormal();
 		while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
 			this.clearData();
-			this.generateRandom();
+			do {
+				this.generateRandom();
+			} while(usedIndexes.contains(this.courseIndexes));
+			this.usedIndexes.add(new ArrayList<Integer>(courseIndexes));
 		};
 		this.saveSolution(solution);
 		globalMinimum = this.getValue(solution);
@@ -271,7 +277,7 @@ public class GreedySolve implements Runnable{
 		int bestIndex = 0;
 		for(int i = 0; i < penalties[0]; i++){
 			isSecondPhase = true;
-			int val = this.solveHillClimb(solution, taboos);
+			int val = this.solveHillClimbFaster(solution, taboos);
 			
 			if(val < globalMinimum){
 				for(Course c : courses){
@@ -287,6 +293,7 @@ public class GreedySolve implements Runnable{
 				this.saveSolution(solution);
 				globalMinimum = val;
 				bestIndex = i;
+				if(i >= penalties[0]-1) break;
 			}
 			this.clearData();
 			if(args[4] == 1){
@@ -404,7 +411,7 @@ public class GreedySolve implements Runnable{
 						secondNode = node;
 						swapMode = localSwapMode;
 					}
-				}
+				}/*
 				List<List<Combo>> diffNeighbors = this.getDifferentNeighbors(nodes, currentNode);
 				for(List<Combo> list: diffNeighbors){
 					this.changeDifferentNeighbors(currentNode, list);
@@ -418,7 +425,7 @@ public class GreedySolve implements Runnable{
 						differentBetterNeighbors = list;
 						swapMode = 3;
 					}
-				}
+				}*/
 				
 				actualNodeIndex++;
 			}
@@ -470,7 +477,83 @@ public class GreedySolve implements Runnable{
 		return globalMinimum;
 		
 	}
-	
+public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
+		int globalMinimum = 0;
+		int firstNodeIndex;
+		int actualNodeIndex;
+		int swapMode;
+		int startValue;
+		int localSwapMode;
+		int neighborIndex;
+		boolean foundBetter = true;
+		while(foundBetter){
+			actualNodeIndex = 0;
+			firstNodeIndex = -1;
+			Combo secondNode = null;
+			Combo currentNode;
+			swapMode = 0;
+			globalMinimum = this.getValue(nodes);
+			while(actualNodeIndex < nodes.size()){
+				currentNode = nodes.get(actualNodeIndex);									//Aktuális csúcs
+				List<Combo> neighbors = this.getNeighbors(nodes, currentNode);		//Szomszédok listája
+				startValue = this.getValue(nodes);												//Kezdeti érték
+				this.softStatus = actualNodeIndex;						//Csak a GUI-hoz kell
+				for(Combo node : neighbors){											//Szomszédok listájának iterálása
+					localSwapMode = 0;
+					if(taboos.contains(new Taboo((node.courseIndex==-1?0:1),currentNode,node))) continue;
+					if(node.courseIndex==-1){								//Ha a szomszéd üres
+						this.setCourse(node, currentNode);
+						nodes.set(actualNodeIndex, node);							
+					} else {																//Ha cserélünk
+						localSwapMode = 1;
+						neighborIndex = this.getIndex(nodes, node);
+						this.swap(currentNode, node);
+						nodes.set(actualNodeIndex, currentNode);
+						nodes.set(neighborIndex, node);	
+					}
+					int newValue =  this.getValue(nodes);
+					if(localSwapMode==1){				//only for switch
+						this.swap(currentNode, node);					
+					    neighborIndex = this.getIndex(nodes, node);
+						nodes.set(actualNodeIndex, currentNode);
+						nodes.set(neighborIndex, node);	
+				    } else if(localSwapMode == 0){
+						nodes.set(actualNodeIndex, currentNode);
+						this.setCourse(currentNode, node);
+					}
+					
+					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
+						firstNodeIndex=actualNodeIndex;
+						globalMinimum = newValue;
+						startValue = newValue;
+						secondNode = node;
+						swapMode = localSwapMode;
+					}
+				}
+				actualNodeIndex++;
+			}
+			if(secondNode != null && swapMode == 0){							//Better course pair to swap
+				currentNode = nodes.get(firstNodeIndex);
+				taboos.add(new Taboo(swapMode,currentNode, secondNode));
+				this.setCourse(secondNode, currentNode);
+				nodes.set(firstNodeIndex, secondNode);
+				foundBetter = true;
+			} else if(secondNode != null && swapMode == 1){
+				currentNode = nodes.get(firstNodeIndex);
+				taboos.add(new Taboo(swapMode,currentNode, secondNode));
+			    neighborIndex = this.getIndex(nodes, secondNode);	
+				this.swap(currentNode, secondNode);
+				nodes.set(neighborIndex, currentNode);	
+				nodes.set(firstNodeIndex, secondNode);
+				foundBetter = true;
+			} else {
+				foundBetter = false;
+			}
+			bestIteration = this.getValue(nodes);
+		}
+		return globalMinimum;
+		
+	}
 	private int getIndex(List<Combo> nodes, Combo input){
 		for(int i = 0; i < nodes.size(); i++){
 			Combo c = nodes.get(i);
@@ -488,12 +571,51 @@ public class GreedySolve implements Runnable{
 		}
 		int max1 = coursesByRoom[0];
 		int min1 = coursesByRoom[0];
-		for(int i = 1; i < coursesByRoom.length; i++) {
+		for(int i = 1; i < coursesByRoom.length; i++) {										//Courses by room constraint
 			if(coursesByRoom[i] < min1) min1 = coursesByRoom[i];
 			if(coursesByRoom[i] > max1) max1 = coursesByRoom[i];
 		}
 		value += (max1-min1);
 		for(Teacher te : teachers){														//TEacher compactness
+			for(int day = 0; day < INPUT_DAYS; day++){
+				//value += this.getPenaltyByTeacherDay(input, te, day);
+				int min = 10;
+				int max = -1;
+				List<TimeSlot> in = te.getAvailabilityAtDay(day);				
+				if(in == null) break;
+				for(TimeSlot ts : in){
+					if(ts.getSlot() < min) min = ts.getSlot();
+					if(ts.getSlot() > max) max = ts.getSlot();
+				}
+				if(min == max){
+					if(penalties[3]==1) value += max;
+					continue;
+				}
+				for(int slot = 0; slot < max; slot++){
+					if(!in.contains(new TimeSlot(day,slot))){
+						value++;
+					}
+				}
+			}
+		}
+		return value;
+	}
+	
+	public int getValue(List<Combo> input, Combo first, Combo second){
+		int value = 0;
+		int[] coursesByRoom = new int[rooms.size()];
+		for(Combo combo : input){
+			if(combo.getFirstSlot().getDay()==4) value+=penalties[1];			//Friday constraint penalties
+			coursesByRoom[combo.roomIndex]+= combo.getSize();
+		}
+		int max1 = coursesByRoom[0];
+		int min1 = coursesByRoom[0];
+		for(int i = 1; i < coursesByRoom.length; i++) {										//Courses by room constraint
+			if(coursesByRoom[i] < min1) min1 = coursesByRoom[i];
+			if(coursesByRoom[i] > max1) max1 = coursesByRoom[i];
+		}
+		value += (max1-min1);
+		for(Teacher te : new ArrayList<Teacher>(Arrays.asList(teachers.get(first.teacherIndex), teachers.get(second.teacherIndex)))){														//TEacher compactness
 			for(int day = 0; day < INPUT_DAYS; day++){
 				//value += this.getPenaltyByTeacherDay(input, te, day);
 				int min = 10;

@@ -134,8 +134,6 @@ public class ReaderCTT {
 				}
 			}
 		}
-		System.out.println("");
-		
 	}
 
 	private void addUnavailability(String topicname, String day, String slot) {

@@ -195,6 +195,7 @@ public class TimeTableFrame extends JFrame implements Runnable{
 		args[6] = (useSlower.isSelected()?1:0);
 		g.setArgs(args);
 		Thread tr = new Thread(g);
+		tr.setPriority(Thread.MAX_PRIORITY);
 		tr.start();
 		this.softBar.setMaximum(g.softMax);
 		Instant startSoft = Instant.now();
