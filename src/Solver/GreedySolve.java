@@ -118,8 +118,8 @@ public class GreedySolve implements Runnable{
 	}
 	
 	
-	public boolean fasterFirstPhase(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
-		runCount++;
+	public boolean fasterFirstPhase(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode, int threshold){	
+	
 		if(courseIndex >= cs.size()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(courseIndexes.get(courseIndex));									//Else we get the first unfixed course, and trying to fix
 		List<Integer> teacherIndexes = this.getTeacherByCourse(c.getTopicname());
@@ -153,9 +153,9 @@ public class GreedySolve implements Runnable{
 		Room r = rooms.get(newNode.roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
 		Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
-		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS/* || c.getCapacity() > r.getCapacity()*/){
+		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()+threshold){
 			newNode.slotIndex++;
-			return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
+			return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode, threshold);		
 		}
 		if(teacher.isAvailable(combo.getSlotList())){								//If the course has time/room/teacher, we can add to our solved map
 			teachers.get(teacherIndexes.get(newNode.teacherIndex)).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for his course
@@ -163,10 +163,10 @@ public class GreedySolve implements Runnable{
 			solved.add(combo);
 			for(int i = 0; i < c.getSlots();i++) used.add(new IndexCombo(newNode.slotIndex+i, newNode.roomIndex,newNode.teacherIndex));			
 			
-			return fasterFirstPhase(cs,++courseIndex,solved,notAllowed,used,teachers,new IndexCombo(0,0,0));		//We going down the tree with the next course
+			return fasterFirstPhase(cs,++courseIndex,solved,notAllowed,used,teachers,new IndexCombo(0,0,0), threshold);		//We going down the tree with the next course
 		}
 		newNode.slotIndex++;
-		return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		//If we didn't find something, we have to check the next time slots/rooms
+		return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode, threshold);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 
 	public boolean backtrackFirstPhase(List<Course> cs, int courseIndex, List<Combo> solved, List<Combo> notAllowed, List<IndexCombo> used, List<Teacher> teachers,IndexCombo newNode){	
@@ -260,13 +260,19 @@ public class GreedySolve implements Runnable{
 
 	
 	public int solver(){
+		int threshold = 0;
 		for(int i = 0; i < 4; i++){
 			this.penalties[i] = args[i];
 		}
 		this.isDebug = (args[5]==1);
 		int globalMinimum = -1;
 		this.generateNormal();
-		while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))) {
+		while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0), threshold)) {
+			runCount++;
+			if(runCount%30 == 0) {
+				threshold += 10;
+				this.usedIndexes.clear();
+			}
 			this.clearData();
 			do {
 				this.generateRandom();
@@ -304,7 +310,7 @@ public class GreedySolve implements Runnable{
 			if(args[6]==1){
 				this.backtrackFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0));
 			} else {
-				while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0))){
+				while(!this.fasterFirstPhase(this.courses, 0, this.solution, new ArrayList<Combo>(), new ArrayList<IndexCombo>(), this.teachers, new IndexCombo(0,0,0),threshold)){
 					System.out.println("Regen");
 					if(args[4] == 1){
 						this.generateRandom();
@@ -541,7 +547,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 				this.setCourse(secondNode, currentNode);
 				nodes.set(firstNodeIndex, secondNode);
-				System.out.println("newplace" + currentNode.courseName + " " + secondNode.courseName + " " + globalMinimum);
+				System.out.println("newplace" + currentNode.courseName +  " " + globalMinimum);
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
 				currentNode = nodes.get(firstNodeIndex);
@@ -613,7 +619,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 	public int getValue(List<Combo> input) {
 		int out = 0;
 		HashMap<String, WorkingDayCons> minWorking = new  HashMap();		//MinWorkingDays constraint
-		HashMap<Integer, int[]> currComp = new HashMap();			//Curriculum compactness
+		HashMap<Integer, boolean[][]> currComp = new HashMap();			//Curriculum compactness
 		for(int k= 0; k < input.size(); k++ ) {
 			Combo act = input.get(k);
 			Course c = courses.get(act.courseIndex);
@@ -626,9 +632,9 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 			}
 			for(int i : c.getCurricula()) {									//Curriculum compactness
 				if(currComp.containsKey(i)) {
-					currComp.get(i)[act.getFirstSlot().getDay()]+= 1;
+					currComp.get(i)[act.getFirstSlot().getDay()][act.getFirstSlot().getSlot()]= true;
 				} else {
-					currComp.put(i, new int[INPUT_DAYS]);
+					currComp.put(i, new boolean[INPUT_DAYS][INPUT_SLOTS]);
 				}
 			}
 			
@@ -638,9 +644,14 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 			out += e.getValue().getPenalty();
 		}
 	
-		for(Entry<Integer, int[]> e : currComp.entrySet()) {						//currcomp
-			for(int day = 0; day < INPUT_DAYS; day++) {
-				if(e.getValue()[day] == 1) out += 2;
+		for(Entry<Integer, boolean[][]> e : currComp.entrySet()) {						//currcomp
+			boolean[][] b = e.getValue();
+			for(int day = 0; day < INPUT_DAYS; day++) {			
+				for(int slot = 1; slot < INPUT_SLOTS - 1; slot++) {					
+					if(!b[day][slot-1] && !b[day][slot+1] && b[day][slot]) {
+						out += 2;
+					}
+				}
 			}
 		}
 		return out;
@@ -692,7 +703,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 		for(Combo c : solution){ 				//get the current courses, which are swapable to the given combo
 			int firstIndex = input.teacherIndex;
 			int cIndex = c.teacherIndex;
-			if(!c.equals(input) && c.getSize() == input.getSize() && firstIndex != cIndex && !courses.get(c.courseIndex).isUnavailable(input.t) && !courses.get(input.courseIndex).isUnavailable(c.t)){
+			if(Math.abs(rooms.get(c.roomIndex).getCapacity()-rooms.get(input.roomIndex).getCapacity()) <= 6 &&  !c.equals(input) && c.getSize() == input.getSize() && firstIndex != cIndex && !courses.get(c.courseIndex).isUnavailable(input.t) && !courses.get(input.courseIndex).isUnavailable(c.t)){
 				Set<Integer> tmp = new HashSet<Integer>(courses.get(input.courseIndex).getCurricula());
 				tmp.retainAll(courses.get(c.courseIndex).getCurricula());
 				if(tmp.size() > 0) continue;
@@ -707,7 +718,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 			Combo newCombo = null;
 			for(Room r : rooms){
 				boolean isBad = false;
-				if(r.getCapacity() < input.getSize()) continue;
+				if(r.getCapacity()+6 < input.getSize()) continue;
 				newCombo = new Combo(input.getSize(), actual, rooms.indexOf(r), r.getName());
 				for(Combo c : this.getComboByRoom(r, solution)){
 					if(newCombo.hasConflict(c)){
