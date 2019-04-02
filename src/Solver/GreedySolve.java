@@ -1,22 +1,24 @@
 package Solver;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import Datatypes.Combo;
 import Datatypes.Course;
+import Datatypes.Curriculum;
 import Datatypes.IndexCombo;
 //import Datatypes.Curriculum;
 import Datatypes.Room;
 import Datatypes.Teacher;
 import Datatypes.TimeSlot;
 import Datatypes.Topic;
+import Datatypes.WorkingDayCons;
 
 public class GreedySolve implements Runnable{
 	public Reader r;
@@ -151,7 +153,7 @@ public class GreedySolve implements Runnable{
 		Room r = rooms.get(newNode.roomIndex);							//and the room
 		Teacher teacher = teachers.get(teacherIndexes.get(newNode.teacherIndex));
 		Combo combo = new Combo(courseIndexes.get(courseIndex),c.getName(),c.getSlots(),t, rooms.indexOf(r), r.getName());
-		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS || c.getCapacity() > r.getCapacity()){
+		if(notAllowed.contains(combo) || erroneus(solved,combo) || t.getSlot()+c.getSlots() > INPUT_SLOTS/* || c.getCapacity() > r.getCapacity()*/){
 			newNode.slotIndex++;
 			return fasterFirstPhase(cs,courseIndex,solved,notAllowed,used,teachers,newNode);		
 		}
@@ -506,28 +508,30 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 						nodes.set(actualNodeIndex, node);							
 					} else {																//Ha cserélünk
 						localSwapMode = 1;
-						neighborIndex = this.getIndex(nodes, node);
+					//	neighborIndex = this.getIndex(nodes, node);
 						this.swap(currentNode, node);
-						nodes.set(actualNodeIndex, currentNode);
-						nodes.set(neighborIndex, node);	
+					//	nodes.set(actualNodeIndex, currentNode);
+					//	nodes.set(neighborIndex, node);	
 					}
 					int newValue =  this.getValue(nodes);
 					if(localSwapMode==1){				//only for switch
-						this.swap(currentNode, node);					
-					    neighborIndex = this.getIndex(nodes, node);
-						nodes.set(actualNodeIndex, currentNode);
-						nodes.set(neighborIndex, node);	
+						this.swap(currentNode, node);		
+					//    neighborIndex = this.getIndex(nodes, node);					 
+					//	nodes.set(actualNodeIndex, currentNode);
+					//	nodes.set(neighborIndex, node);	
 				    } else if(localSwapMode == 0){
 						nodes.set(actualNodeIndex, currentNode);
 						this.setCourse(currentNode, node);
 					}
 					
 					if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
+					//	System.out.println(localSwapMode + "update " + newValue + " " + globalMinimum);
 						firstNodeIndex=actualNodeIndex;
 						globalMinimum = newValue;
 						startValue = newValue;
 						secondNode = node;
 						swapMode = localSwapMode;
+						bestIteration = newValue;
 					}
 				}
 				actualNodeIndex++;
@@ -537,19 +541,21 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 				this.setCourse(secondNode, currentNode);
 				nodes.set(firstNodeIndex, secondNode);
+				System.out.println("newplace" + currentNode.courseName + " " + secondNode.courseName + " " + globalMinimum);
 				foundBetter = true;
 			} else if(secondNode != null && swapMode == 1){
 				currentNode = nodes.get(firstNodeIndex);
 				taboos.add(new Taboo(swapMode,currentNode, secondNode));
 			    neighborIndex = this.getIndex(nodes, secondNode);	
 				this.swap(currentNode, secondNode);
-				nodes.set(neighborIndex, currentNode);	
-				nodes.set(firstNodeIndex, secondNode);
+			//	nodes.set(neighborIndex, currentNode);	
+			//	nodes.set(firstNodeIndex, secondNode);
+				System.out.println("swap" + currentNode.courseName + " " + this.getValue(nodes));
 				foundBetter = true;
 			} else {
 				foundBetter = false;
 			}
-			bestIteration = this.getValue(nodes);
+		//	bestIteration = this.getValue(nodes);
 		}
 		return globalMinimum;
 		
@@ -562,7 +568,8 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 		return -1;
 	}
 	
-	public int getValue(List<Combo> input){
+	public int getValueOld(List<Combo> input){
+	
 		int value = 0;
 		int[] coursesByRoom = new int[rooms.size()];
 		for(Combo combo : input){
@@ -601,43 +608,42 @@ public int solveHillClimbFaster(List<Combo> nodes, List<Taboo> taboos){
 		return value;
 	}
 	
-	public int getValue(List<Combo> input, Combo first, Combo second){
-		int value = 0;
-		int[] coursesByRoom = new int[rooms.size()];
-		for(Combo combo : input){
-			if(combo.getFirstSlot().getDay()==4) value+=penalties[1];			//Friday constraint penalties
-			coursesByRoom[combo.roomIndex]+= combo.getSize();
-		}
-		int max1 = coursesByRoom[0];
-		int min1 = coursesByRoom[0];
-		for(int i = 1; i < coursesByRoom.length; i++) {										//Courses by room constraint
-			if(coursesByRoom[i] < min1) min1 = coursesByRoom[i];
-			if(coursesByRoom[i] > max1) max1 = coursesByRoom[i];
-		}
-		value += (max1-min1);
-		for(Teacher te : new ArrayList<Teacher>(Arrays.asList(teachers.get(first.teacherIndex), teachers.get(second.teacherIndex)))){														//TEacher compactness
-			for(int day = 0; day < INPUT_DAYS; day++){
-				//value += this.getPenaltyByTeacherDay(input, te, day);
-				int min = 10;
-				int max = -1;
-				List<TimeSlot> in = te.getAvailabilityAtDay(day);				
-				if(in == null) break;
-				for(TimeSlot ts : in){
-					if(ts.getSlot() < min) min = ts.getSlot();
-					if(ts.getSlot() > max) max = ts.getSlot();
-				}
-				if(min == max){
-					if(penalties[3]==1) value += max;
-					continue;
-				}
-				for(int slot = 0; slot < max; slot++){
-					if(!in.contains(new TimeSlot(day,slot))){
-						value++;
-					}
+	
+	
+	public int getValue(List<Combo> input) {
+		int out = 0;
+		HashMap<String, WorkingDayCons> minWorking = new  HashMap();		//MinWorkingDays constraint
+		HashMap<Integer, int[]> currComp = new HashMap();			//Curriculum compactness
+		for(int k= 0; k < input.size(); k++ ) {
+			Combo act = input.get(k);
+			Course c = courses.get(act.courseIndex);
+			if(c.getCapacity() > rooms.get(act.roomIndex).getCapacity()) out += c.getCapacity() - rooms.get(act.roomIndex).getCapacity();		//RoomCapacity
+			if(minWorking.containsKey(c.getTopicname())) {
+				minWorking.get(c.getTopicname()).arr[act.getFirstSlot().getDay()]= true;
+				minWorking.get(c.getTopicname()).rooms.add(act.roomIndex);
+			} else {
+				minWorking.put(c.getTopicname(), new WorkingDayCons(INPUT_DAYS, c.getMinWorkingDays()));
+			}
+			for(int i : c.getCurricula()) {									//Curriculum compactness
+				if(currComp.containsKey(i)) {
+					currComp.get(i)[act.getFirstSlot().getDay()]+= 1;
+				} else {
+					currComp.put(i, new int[INPUT_DAYS]);
 				}
 			}
+			
 		}
-		return value;
+		
+		for(Entry<String, WorkingDayCons> e : minWorking.entrySet()) {		//minwork
+			out += e.getValue().getPenalty();
+		}
+	
+		for(Entry<Integer, int[]> e : currComp.entrySet()) {						//currcomp
+			for(int day = 0; day < INPUT_DAYS; day++) {
+				if(e.getValue()[day] == 1) out += 2;
+			}
+		}
+		return out;
 	}
 	
 	private int getPenaltyByTeacherDay(List<Combo> input, Teacher te, int day){

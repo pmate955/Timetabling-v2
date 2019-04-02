@@ -62,7 +62,7 @@ public class ReaderCTT {
 							teachers.add(t);
 						}
 						topics.add(new Topic(arr[0]));
-						this.generateCourses(arr[0], Integer.parseInt(arr[2]), Integer.parseInt(arr[4]));
+						this.generateCourses(arr[0], Integer.parseInt(arr[2]), Integer.parseInt(arr[3]) ,Integer.parseInt(arr[4]));
 						s = br.readLine();
 						readed.append(s + "\r\n");
 					}
@@ -145,9 +145,9 @@ public class ReaderCTT {
 		}
 	}
 	
-	private void generateCourses(String baseName, int count, int students) {
+	private void generateCourses(String baseName, int count,int minWorkingDays, int students) {
 		for(int i = 0;  i < count; i++) {
-			Course c = new Course(baseName + "_" + i, baseName, 1, students);
+			Course c = new Course(baseName + "_" + i, baseName, 1, students, minWorkingDays);
 			courses.add(c);
 			topics.get(topics.size()-1).addCourse(c);
 		}
