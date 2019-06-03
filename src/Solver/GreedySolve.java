@@ -64,7 +64,7 @@ public class GreedySolve implements Runnable{
 		this.isDebug = false;
 		this.courseTeacher = new HashMap<String,List<Integer>>();
 		this.useNew = useNewCTT;
-		this.ran = new Random(1212);
+		this.ran = new Random(19951019);			//1212
 		if(!useNewCTT) {
 			this.r = new Reader(filename);
 			r.readFile();
@@ -104,6 +104,7 @@ public class GreedySolve implements Runnable{
 			}
 		}
 		this.softMax = courses.size();
+		System.out.println(courses.size());
 	}
 	
 	public void clearData(){
@@ -261,7 +262,7 @@ public class GreedySolve implements Runnable{
 	}
 	
 
-	
+	int allIter = 0;
 	public int solver(){
 		int threshold = 0;
 		for(int i = 0; i < 4; i++){
@@ -272,8 +273,9 @@ public class GreedySolve implements Runnable{
 		this.generateNormal();
 		int firstMin = Integer.MAX_VALUE;
 		List<Combo> savedFirst = new ArrayList<>();
-		for(int i = 0; i <10; i++) {
-			System.out.println("First pahse " + i);
+//		System.out.println("First phase start ------------");
+		for(int i = 0; i <2; i++) {
+			System.out.println("First phase " + i);
 			runCount = 0;
 			threshold = 0;
 		//	this.usedIndexes.clear();
@@ -281,12 +283,13 @@ public class GreedySolve implements Runnable{
 				runCount++;
 				if(runCount%30 == 0) {
 					threshold += 10;
-				//	this.usedIndexes.clear();
+			//	  this.usedIndexes.clear();
 				}
 			  if(runCount%1000==0) this.usedIndexes.clear(); 
 				this.clearData();
 				do {
 					this.generateRandom();
+					//System.out.println("regen");
 				} while(usedIndexes.contains(this.courseIndexes));
 				this.usedIndexes.add(new ArrayList<Integer>(courseIndexes));
 			}
@@ -294,10 +297,11 @@ public class GreedySolve implements Runnable{
 			if(val < firstMin) {
 				firstMin = val;
 				savedFirst = new ArrayList<>(solution);
-				System.out.println("Lower val " + val);
+				System.out.println(val);
 			}
 			solution.clear();
 		}
+//		System.out.println("End first phase ------------------");
 		solution = new ArrayList<>(savedFirst);
 		this.saveSolution(solution);
 		globalMinimum = this.getValue(solution);
@@ -551,7 +555,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 							this.setCourse(currentNode, node);
 						}					
 						if((newValue < startValue && newValue < globalMinimum)){			//If we found better global value
-						firstNodeIndex=actualNodeIndex;
+							firstNodeIndex=actualNodeIndex;
 							globalMinimum = newValue;
 							startValue = newValue;
 							secondNode = node;
@@ -567,6 +571,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 					this.setCourse(secondNode, currentNode);
 					nodes.set(firstNodeIndex, secondNode);
 					taboos.add(currentNode + " "+ secondNode);
+			//		System.out.println(globalMinimum);
 					changeNumber++;
 					foundBetter = true;
 				} else if(secondNode != null && swapMode == 1){
@@ -575,13 +580,15 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 				    neighborIndex = this.getIndex(nodes, secondNode);	
 					this.swap(currentNode, secondNode);
 					changeNumber++;
+				//	System.out.println(globalMinimum);
 					foundBetter = true;
 				} else {
 					foundBetter = false;
 				}
-			if(changeNumber > 10) taboos.remove(0);
+				if(changeNumber > 10) taboos.remove(0);
 			}
 			System.out.println("Replaced courses: " + changeNumber + " " + this.getValue(nodes));
+			allIter += changeNumber;
 			if(this.getValue(nodes)<gMin) {
 				gMin = this.getValue(nodes);
 				this.saveSolution(nodes);
@@ -595,6 +602,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 			System.out.println("New value: " + this.getValue(nodes));
 		}
 		System.out.println("END " + this.getValue(saved));
+		System.out.println("All iterations " + allIter);
 		return this.getValue(saved);
 		
 	}
@@ -606,7 +614,6 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 		int startValue;
 		int localSwapMode;
 		int neighborIndex;
-		int changeNumber = 0;
 		while(depth > 0){
 			actualNodeIndex = 0;
 			firstNodeIndex = -1;
@@ -660,15 +667,11 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 				nodes.set(firstNodeIndex, secondNode);
 				newTaboo.add(secondNode + " " + currentNode);
 				newTaboo.add(currentNode + " " + secondNode);
-	//			System.out.println("newpl " + secondNode+ " " +  this.getValue(nodes));
-				changeNumber++;
 			} else if(secondNode != null && swapMode == 1){
 				currentNode = nodes.get(firstNodeIndex);						//Swap
 				newTaboo.add(currentNode + " "+ secondNode);
 			    neighborIndex = this.getIndex(nodes, secondNode);	
-		//	    System.out.println(currentNode + "swap  " + secondNode + " "+ this.getValue(nodes));
 				this.swap(currentNode, secondNode);
-				changeNumber++;
 			} 
 			bestIteration = this.getValue(nodes);
 			depth--;
@@ -738,7 +741,7 @@ public int solveHillClimbFaster(List<Combo> nodes, List<String> taboos){
 				minWorking.get(c.getTopicname()).arr[act.getFirstSlot().getDay()]= true;
 				minWorking.get(c.getTopicname()).rooms.add(act.roomIndex);
 			} else {
-				minWorking.put(c.getTopicname(), new WorkingDayCons(INPUT_DAYS, c.getMinWorkingDays()));
+				minWorking.put(c.getTopicname(), new WorkingDayCons(INPUT_DAYS, c.getMinWorkingDays(),act.roomIndex));
 			}
 			for(int i : c.getCurricula()) {									//Curriculum compactness
 				if(currComp.containsKey(i)) {
