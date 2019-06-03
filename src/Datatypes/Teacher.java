@@ -1,19 +1,25 @@
 package Datatypes;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Teacher {
 	private String name;
 	private List<String> specialities;
 	private Set<TimeSlot> availability;
+	private Map<Integer, List<TimeSlot>> availabilityPerDay;
 	
 	public Teacher(String name){
 		this.name = name;
 		this.specialities = new ArrayList<String>();
 		this.availability = new HashSet<TimeSlot>();
+		this.availabilityPerDay = new HashMap<Integer, List<TimeSlot>>();
 	}
 	
 	public Teacher(Teacher input){
@@ -54,6 +60,7 @@ public class Teacher {
 			TimeSlot ts = new TimeSlot(t.getDay(),t.getSlot()+i);
 			if(!availability.contains(ts)) availability.add(ts);
 		}
+		
 	}
 	
 	public void addUnavailablePeriod(List<TimeSlot> in){

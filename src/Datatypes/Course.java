@@ -13,9 +13,11 @@ public class Course {
 	private Set<Integer> curricula;
 	private boolean isFixed;
 	private String topicname;
+	private int minWorkingDays;
 	public List<TimeSlot> unavailability;
 	
-	public Course(String name, String topicname,  int slots, int capacity){
+	
+	public Course(String name, String topicname,  int slots, int capacity, int minWorkingDays){
 		this.name = name;
 		this.capacity = capacity;
 		this.slots = slots;
@@ -23,6 +25,7 @@ public class Course {
 		this.topicname = topicname;
 		this.unavailability = new ArrayList<TimeSlot>();
 		this.curricula = new HashSet<Integer>();
+		this.minWorkingDays = minWorkingDays;
 	}
 	
 	public void setUnavailabilty(List<TimeSlot> input) {
@@ -101,8 +104,9 @@ public class Course {
 		this.isFixed = true;
 	}
 	
-	public String getTopicName() {
-		return this.topicname;
+	
+	public int getMinWorkingDays() {
+		return minWorkingDays;
 	}
 	
 	/* (non-Javadoc)
