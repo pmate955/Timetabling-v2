@@ -16,14 +16,14 @@ public class VisualRoom extends JPanel{
 	public VisualRoom(GreedySolve g, Room r)
 	{
 		GridBagLayout gl = new GridBagLayout();
-		double[] weights = new double[g.getMaxSlot()];
-		for(int i = 0; i < g.getMaxSlot(); i++){
+		double[] weights = new double[g.INPUT_SLOTS];
+		for(int i = 0; i < g.INPUT_SLOTS; i++){
 			weights[i] = 2;
 		}
 		gl.rowWeights = weights;
 		setLayout(new GridBagLayout());
 		addDummySlot(0,0,"Day/slot",null);
-		for(int i = 0; i < g.getMaxSlot(); i++){
+		for(int i = 0; i < g.INPUT_SLOTS; i++){
 			addDummySlot(0,i+1, "Slot", "" + i);
 		}
 		for(int i = 0; i < g.INPUT_DAYS; i++){
@@ -35,7 +35,7 @@ public class VisualRoom extends JPanel{
 			//TODO: check if slots are 0
 			Combo current = g.getCourseByPosRoom(g.saved, r, i, 0);
 			int startSlot = 0;
-			for (int j = 0; j < g.maxSlotByDay.get(i); j++) {
+			for (int j = 0; j < g.INPUT_SLOTS; j++) {
 				if(g.getCourseByPosRoom(g.saved, r, i, j) == null)
 				{
 					if(current != null) addCourse(current,g, i, startSlot);
